@@ -1,0 +1,2 @@
+{"level":"info","message":"Server running in development mode on port 5000","service":"urbanpulse-backend","timestamp":"2026-03-11 23:21:19"}
+{"level":"info","message":"MongoDB Connected: localhost","service":"urbanpulse-backend","timestamp":"2026-03-11 23:21:19"}
