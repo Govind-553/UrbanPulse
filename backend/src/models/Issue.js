@@ -22,6 +22,18 @@ const IssueSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please specify the ward']
     },
+    location: {
+      type: String,
+      required: [true, 'Please specify a location']
+    },
+    latitude: {
+      type: Number,
+      required: [true, 'Please specify latitude']
+    },
+    longitude: {
+      type: Number,
+      required: [true, 'Please specify longitude']
+    },
     status: {
       type: String,
       enum: ['reported', 'in-progress', 'resolved', 'closed'],

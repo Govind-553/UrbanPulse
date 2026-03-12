@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { Camera, MapPin, UploadCloud, CheckCircle, Navigation } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import exifr from 'exifr';
+import { reportService } from '../services/api';
 
 export default function CitizenReportPage() {
   const [formData, setFormData] = useState({
     issueType: '',
     description: '',
     location: '',
+    latitude: null,
+    longitude: null,
     photo: null,
   });
   
@@ -25,54 +28,108 @@ export default function CitizenReportPage() {
   ];
 
   const handleGpsDetect = async () => {
-    if (!formData.photo) {
-      alert("Please upload a photo first to extract its location.");
-      return;
-    }
-    
     setGpsLoading(true);
+    let coords = null;
+
     try {
-      // Parse EXIF data from the uploaded photo
-      const gpsData = await exifr.gps(formData.photo);
-      
-      if (gpsData && gpsData.latitude && gpsData.longitude) {
-        const { latitude, longitude } = gpsData;
-        
-        // Reverse geocoding using Nominatim
+      // 1. Try to get EXIF data first if photo exists
+      if (formData.photo) {
+        const gpsData = await exifr.gps(formData.photo);
+        if (gpsData && gpsData.latitude && gpsData.longitude) {
+          coords = { latitude: gpsData.latitude, longitude: gpsData.longitude };
+        }
+      }
+    } catch (err) {
+      console.log("No EXIF data or error extracting:", err);
+    }
+
+    // 2. Fallback to browser geolocation if no EXIF
+    if (!coords) {
+      try {
+        coords = await new Promise((resolve, reject) => {
+          if (!navigator.geolocation) {
+             reject(new Error("Geolocation is not supported by your browser"));
+          } else {
+             navigator.geolocation.getCurrentPosition(
+               (position) => resolve({ latitude: position.coords.latitude, longitude: position.coords.longitude }),
+               (error) => reject(error),
+               { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+             );
+          }
+        });
+      } catch (err) {
+        console.error("Browser geolocation error:", err);
+        alert("Could not detect location from image or browser. Please ensure location services are enabled.");
+        setGpsLoading(false);
+        return;
+      }
+    }
+
+    // 3. Reverse geocoding using Nominatim
+    if (coords) {
+      const { latitude, longitude } = coords;
+      try {
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
         const data = await response.json();
         
         if (data && data.display_name) {
-          setFormData({ ...formData, location: data.display_name });
+          setFormData({ ...formData, location: data.display_name, latitude, longitude });
         } else {
-          setFormData({ ...formData, location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` });
+          setFormData({ ...formData, location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`, latitude, longitude });
         }
-      } else {
-        alert("Could not find GPS data in the uploaded image. Please ensure location services were enabled when the photo was taken.");
+      } catch (err) {
+        console.error("Reverse geocoding failed", err);
+        setFormData({ ...formData, location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`, latitude, longitude });
       }
-    } catch (error) {
-      console.error("Error extracting EXIF data:", error);
-      alert("Error reading image data. Please ensure it is a valid image file.");
-    } finally {
-      setGpsLoading(false);
     }
+    
+    setGpsLoading(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Mock API Call
-    setTimeout(() => {
+    try {
+      const categoryMap = {
+        'Pothole': 'pothole',
+        'Waterlogging': 'waterlogging',
+        'Drainage Blockage': 'drainage',
+        'Broken Streetlight': 'streetlight',
+        'Garbage Overflow': 'garbage'
+      };
+
+      const submitData = new FormData();
+      submitData.append('title', `${formData.issueType} Reported`);
+      submitData.append('description', formData.description);
+      submitData.append('category', categoryMap[formData.issueType] || 'other');
+      submitData.append('ward', 'Ward 1'); // default mapped ward
+      submitData.append('location', formData.location);
+      
+      // We must provide generic fallback coords if the user didn't use EXIF
+      const finalLat = formData.latitude || 19.0760;
+      const finalLng = formData.longitude || 72.8777;
+      submitData.append('latitude', finalLat);
+      submitData.append('longitude', finalLng);
+
+      if (formData.photo) {
+        submitData.append('images', formData.photo);
+      }
+
+      await reportService.submitReport(submitData);
+      
       setIsSubmitting(false);
       setSubmitted(true);
       
-      // Auto-hide success message after 5 seconds to reset form
       setTimeout(() => {
         setSubmitted(false);
-        setFormData({ issueType: '', description: '', location: '', photo: null });
+        setFormData({ issueType: '', description: '', location: '', latitude: null, longitude: null, photo: null });
       }, 5000);
-    }, 2000);
+    } catch (err) {
+      console.error(err);
+      setIsSubmitting(false);
+      alert("Error submitting the issue. Please ensure you are logged in.");
+    }
   };
 
   const handlePhotoUpload = async (e) => {
@@ -150,7 +207,7 @@ export default function CitizenReportPage() {
             <h2 className="text-2xl font-bold text-slate-800 mb-2">Issue Reported!</h2>
             <p className="text-slate-600 mb-6">Your report has been successfully submitted to the municipal authorities. Tracking ID: <span className="font-semibold text-slate-800">#UP-2024-1089</span></p>
             <button 
-              onClick={() => { setSubmitted(false); setFormData({ issueType: '', description: '', location: '', photo: null }); }}
+              onClick={() => { setSubmitted(false); setFormData({ issueType: '', description: '', location: '', latitude: null, longitude: null, photo: null }); }}
               className="bg-green-600 text-white font-medium py-2.5 px-6 rounded-xl hover:bg-green-700 transition"
             >
               Report Another Issue

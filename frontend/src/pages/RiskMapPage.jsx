@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import { Layers, Droplet, CloudRain, AlertTriangle, Cloud, Thermometer, Activity } from 'lucide-react';
+import { reportService } from '../services/api';
 
 // Custom icons based on risk
 const createCustomIcon = (color) => {
@@ -80,18 +81,41 @@ export default function RiskMapPage() {
     fetchCityRisk();
   }, []);
 
-  const dummyIssues = [
-    { id: 1, pos: [19.040, 72.840], type: 'Pothole', status: 'safe', label: 'Fixed Pothole' },
-    { id: 2, pos: [19.055, 72.841], type: 'Waterlogging', status: 'moderate', label: 'Moderate Drainage Block' },
-    { id: 3, pos: [19.065, 72.845], type: 'Pothole', status: 'critical', label: 'Severe Road Cave-in' },
-    { id: 4, pos: [19.065, 72.868], type: 'Broken Streetlight', status: 'critical', label: 'Dark intersection' },
-    { id: 5, pos: [19.070, 72.868], type: 'Garbage Overflow', status: 'safe', label: 'Cleared Garbage' },
-    { id: 6, pos: [19.045, 72.860], type: 'Waterlogging', status: 'moderate', label: 'Slow drainage' },
-  ];
+  const [issues, setIssues] = useState([]);
+
+  useEffect(() => {
+    const fetchLiveIssues = async () => {
+      try {
+        const response = await reportService.getIssues();
+        if (response && response.data) {
+          setIssues(response.data);
+        }
+      } catch (err) {
+        console.error("Failed to load map issues", err);
+      }
+    };
+    fetchLiveIssues();
+  }, []);
+
+  const categoryToType = {
+    'pothole': 'Pothole',
+    'waterlogging': 'Waterlogging',
+    'drainage': 'Drainage Blockage',
+    'streetlight': 'Broken Streetlight',
+    'garbage': 'Garbage Overflow',
+    'other': 'Other'
+  };
+
+  const mapStatusToColorStatus = (status) => {
+    if (status === 'resolved' || status === 'closed') return 'safe';
+    if (status === 'reported') return 'critical';
+    if (status === 'in-progress') return 'moderate';
+    return 'moderate';
+  };
 
   const filteredIssues = filterType === 'All' 
-    ? dummyIssues 
-    : dummyIssues.filter(i => i.type === filterType);
+    ? issues 
+    : issues.filter(i => categoryToType[i.category] === filterType);
 
   return (
     <div className="flex flex-col h-screen pt-16">
@@ -189,21 +213,33 @@ export default function RiskMapPage() {
             />
             
             {/* Render Issues */}
-            {filteredIssues.map((issue) => (
-              <Marker key={issue.id} position={issue.pos} icon={icons[issue.status]}>
-                <Popup>
-                  <div className="font-sans">
-                    <p className="font-bold text-slate-800 text-sm mb-1">{issue.type}</p>
-                    <p className="text-xs text-slate-600 mb-2">{issue.label}</p>
-                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full text-white ${
-                      issue.status === 'safe' ? 'bg-green-500' : issue.status === 'moderate' ? 'bg-yellow-500' : 'bg-red-500'
-                    }`}>
-                      {issue.status}
-                    </span>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
+            {filteredIssues.map((issue) => {
+              if (!issue.latitude || !issue.longitude) return null;
+              
+              const issueTypeLabel = categoryToType[issue.category] || issue.category;
+              const colorStatus = mapStatusToColorStatus(issue.status);
+
+              return (
+                <Marker key={issue._id} position={[issue.latitude, issue.longitude]} icon={icons[colorStatus]}>
+                  <Popup>
+                    <div className="font-sans">
+                      <p className="font-bold text-slate-800 text-sm mb-1">{issueTypeLabel}</p>
+                      <p className="text-xs text-slate-600 mb-2">{issue.title}</p>
+                      <div className="flex flex-col gap-1 mb-2">
+                        <span className="text-[10px] text-slate-500 font-mono bg-slate-100 rounded px-1 w-max">
+                          {issue.latitude.toFixed(6)}, {issue.longitude.toFixed(6)}
+                        </span>
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full text-white w-max ${
+                          colorStatus === 'safe' ? 'bg-green-500' : colorStatus === 'moderate' ? 'bg-yellow-500' : 'bg-red-500'
+                        }`}>
+                          {issue.status}
+                        </span>
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
 
             {/* Render Monsoon Risk Layer (Simulated via overlay circles for now) */}
             {showMonsoonLayer && (
