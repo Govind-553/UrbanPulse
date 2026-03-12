@@ -9,18 +9,11 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const [showRoleSelect, setShowRoleSelect] = useState(false);
-  const [googleRole, setGoogleRole] = useState('citizen');
-  
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleGoogleClick = () => {
-    if (!showRoleSelect) {
-      setShowRoleSelect(true);
-      return;
-    }
-    loginWithGoogle(googleRole);
+    loginWithGoogle('citizen');
   };
 
   const handleSubmit = async (e) => {
@@ -84,29 +77,13 @@ export default function LoginPage() {
             <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-slate-500">Or continue with</span></div>
           </div>
           
-          {showRoleSelect && (
-             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mb-4 p-4 border border-blue-100 bg-blue-50/50 rounded-xl overflow-hidden">
-                <label className="block text-sm font-semibold text-slate-800 mb-2">Please select who you are:</label>
-                <div className="flex gap-4">
-                   <label className="flex items-center space-x-2 text-sm cursor-pointer">
-                     <input type="radio" value="citizen" checked={googleRole === 'citizen'} onChange={() => setGoogleRole('citizen')} className="text-blue-600 focus:ring-blue-500" />
-                     <span>Citizen</span>
-                   </label>
-                   <label className="flex items-center space-x-2 text-sm cursor-pointer">
-                     <input type="radio" value="authority" checked={googleRole === 'authority'} onChange={() => setGoogleRole('authority')} className="text-blue-600 focus:ring-blue-500" />
-                     <span>Municipal Authority</span>
-                   </label>
-                </div>
-             </motion.div>
-          )}
-
           <button 
             type="button"
             onClick={handleGoogleClick}
             className="w-full flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 font-semibold py-2.5 rounded-xl hover:bg-slate-50 transition"
           >
             <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
-            {showRoleSelect ? "Proceed to Google" : "Sign in with Google"}
+            Sign in with Google
           </button>
         </div>
 

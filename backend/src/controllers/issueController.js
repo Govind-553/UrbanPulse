@@ -10,7 +10,7 @@ exports.createIssue = async (req, res, next) => {
     req.body.reportedBy = req.user.id;
 
     if (req.files) {
-      req.body.images = req.files.map(file => file.path);
+      req.body.images = req.files.map(file => file.path.replace(/\\/g, '/'));
     }
 
     const issue = await Issue.create(req.body);
@@ -33,8 +33,18 @@ exports.getIssues = async (req, res, next) => {
 
     // If user is authority, they might want to see all or filter by their ward
     // If user is citizen, they might want to see public issues or their own
-    if (req.user.role === 'citizen') {
-      query = Issue.find({ reportedBy: req.user.id });
+    if (!req.user) {
+      if (req.query.public === 'true') {
+        query = Issue.find({});
+      } else {
+        return res.status(401).json({ success: false, error: 'Not authorized to view private issues' });
+      }
+    } else if (req.user.role === 'citizen') {
+      if (req.query.public === 'true') {
+        query = Issue.find({});
+      } else {
+        query = Issue.find({ reportedBy: req.user.id });
+      }
     } else {
       // Authority might pass a ward query param or fall back to their assigned ward
       const wardFilter = req.query.ward || req.user.ward;
@@ -52,6 +62,26 @@ exports.getIssues = async (req, res, next) => {
       count: issues.length,
       data: issues
     });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Get single issue by ID
+// @route   GET /api/issues/:id
+// @access  Private (any authenticated user) or optionalAuth
+exports.getIssue = async (req, res, next) => {
+  try {
+    const issue = await Issue.findById(req.params.id).populate({
+      path: 'reportedBy',
+      select: 'name email role'
+    });
+
+    if (!issue) {
+      return res.status(404).json({ success: false, error: 'Issue not found' });
+    }
+
+    res.status(200).json({ success: true, data: issue });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }

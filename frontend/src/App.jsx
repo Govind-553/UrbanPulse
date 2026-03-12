@@ -4,6 +4,7 @@ import LandingPage from './pages/LandingPage';
 import CitizenReportPage from './pages/CitizenReportPage';
 import RiskMapPage from './pages/RiskMapPage';
 import CompletedProjectsMapPage from './pages/CompletedProjectsMapPage';
+import MyReportsPage from './pages/MyReportsPage';
 import DashboardPage from './pages/DashboardPage';
 import WardManagementPage from './pages/WardManagementPage';
 import IssueDetailsPage from './pages/IssueDetailsPage';
@@ -30,16 +31,17 @@ function App() {
                 <CitizenReportPage />
               </ProtectedRoute>
             } />
+            <Route path="/my-reports" element={
+              <ProtectedRoute>
+                <MyReportsPage />
+              </ProtectedRoute>
+            } />
             <Route path="/map" element={
               <ProtectedRoute>
                 <RiskMapPage />
               </ProtectedRoute>
             } />
-            <Route path="/completed-projects" element={
-              <ProtectedRoute>
-                <CompletedProjectsMapPage />
-              </ProtectedRoute>
-            } />
+            <Route path="/completed-projects" element={<CompletedProjectsMapPage />} />
             
             {/* Protected by simple password for demo */}
             <Route path="/dashboard" element={

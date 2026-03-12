@@ -94,7 +94,9 @@ export function AuthProvider({ children }) {
     setUser(null);
     setToken(null);
     localStorage.removeItem('up_token');
+    localStorage.removeItem('municipal_pass');
     await supabase.auth.signOut();
+    window.location.href = '/';
   };
 
   const value = {

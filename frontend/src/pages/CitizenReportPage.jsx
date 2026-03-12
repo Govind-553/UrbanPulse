@@ -9,6 +9,7 @@ export default function CitizenReportPage() {
     issueType: '',
     description: '',
     location: '',
+    ward: '',
     latitude: null,
     longitude: null,
     photos: [],
@@ -104,7 +105,7 @@ export default function CitizenReportPage() {
       submitData.append('title', `${formData.issueType} Reported`);
       submitData.append('description', formData.description);
       submitData.append('category', categoryMap[formData.issueType] || 'other');
-      submitData.append('ward', 'Ward 1'); // default mapped ward
+      submitData.append('ward', formData.ward || 'Ward 1'); // use selected ward
       submitData.append('location', formData.location);
       
       // We must provide generic fallback coords if the user didn't use EXIF
@@ -126,7 +127,7 @@ export default function CitizenReportPage() {
       
       setTimeout(() => {
         setSubmitted(false);
-        setFormData({ issueType: '', description: '', location: '', latitude: null, longitude: null, photos: [] });
+        setFormData({ issueType: '', description: '', location: '', ward: '', latitude: null, longitude: null, photos: [] });
       }, 5000);
     } catch (err) {
       console.error(err);
@@ -243,6 +244,22 @@ export default function CitizenReportPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Ward Selection */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-800 mb-2">Select Your Ward</label>
+                <select
+                  required
+                  value={formData.ward}
+                  onChange={(e) => setFormData({ ...formData, ward: e.target.value })}
+                  className="block w-full px-4 py-3 border border-slate-300 rounded-xl leading-5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm shadow-sm"
+                >
+                  <option value="">-- Select Ward --</option>
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i + 1} value={`Ward ${i + 1}`}>Ward {i + 1}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Photo Upload */}

@@ -22,6 +22,18 @@ export default function WardManagementPage() {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const assignTask = async (issueId) => {
+    try {
+      const res = await reportService.updateIssue(issueId, { status: 'assigned' });
+      if (res.success) {
+        setIssues(prev => prev.map(i => i._id === issueId ? { ...i, status: 'assigned' } : i));
+      }
+    } catch (err) {
+      alert('Failed to assign task. Check your permissions.');
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     const fetchIssues = async () => {
       try {
@@ -105,7 +117,7 @@ export default function WardManagementPage() {
                       {row.images && row.images.length > 0 ? (
                         <div className="flex gap-1">
                           {row.images.map((img, idx) => (
-                            <img key={idx} src={`http://localhost:5000/${img}`} alt={`${row.category} ${idx + 1}`} className="h-12 w-16 object-cover rounded border border-slate-200 shadow-sm" />
+                            <img key={idx} src={`http://localhost:5000/${img.replace(/\\/g, '/')}`} alt={`${row.category} ${idx + 1}`} className="h-12 w-16 object-cover rounded border border-slate-200 shadow-sm" />
                           ))}
                         </div>
                       ) : (
@@ -121,10 +133,16 @@ export default function WardManagementPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                         <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg shadow-sm transition-colors text-xs font-medium">Assign Task</button>
-                         <Link to={`/issue/${row._id}`} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg shadow-sm transition-colors text-xs font-medium">Update Status</Link>
-                      </div>
+                       <div className="flex space-x-2">
+                          <button 
+                            onClick={() => assignTask(row._id)}
+                            disabled={row.status !== 'reported'}
+                            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-lg shadow-sm transition-colors text-xs font-medium"
+                          >
+                            {row.status === 'assigned' ? 'Assigned ✓' : 'Assign Task'}
+                          </button>
+                          <Link to={`/issue/${row._id}`} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg shadow-sm transition-colors text-xs font-medium">Update Status</Link>
+                       </div>
                     </td>
                   </tr>
                 ))

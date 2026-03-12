@@ -41,6 +41,27 @@ exports.protect = async (req, res, next) => {
   }
 };
 
+// Optional auth for public routes
+exports.optionalAuth = async (req, res, next) => {
+  // Demo Override — also works for municipal access to public GET routes
+  if (req.headers['x-municipal-pass'] === '123456') {
+    req.user = { _id: 'demo-authority-id', role: 'authority', name: 'Demo Admin' };
+    return next();
+  }
+
+  let token;
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select('-password');
+    } catch (error) {
+      console.error("Optional auth token failed:", error);
+    }
+  }
+  next();
+};
+
 // Grant access to specific roles
 exports.authorize = (...roles) => {
   return (req, res, next) => {

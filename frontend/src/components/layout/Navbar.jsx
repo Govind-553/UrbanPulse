@@ -28,6 +28,7 @@ export default function Navbar() {
           <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">
             <Link to="/" className="text-white hover:text-brand-light border-b-2 border-brand-light pb-1">Home</Link>
             <Link to="/report" className="text-slate-300 hover:text-white transition-colors">Report Issue</Link>
+            <Link to="/my-reports" className="text-slate-300 hover:text-white transition-colors">My Reports</Link>
             <Link to="/map" className="text-slate-300 hover:text-white transition-colors">Risk Map</Link>
             <Link to="/completed-projects" className="text-slate-300 hover:text-white transition-colors">Completed Projects</Link>
             {(!isAuthenticated || user?.role === 'authority') && (
@@ -43,7 +44,7 @@ export default function Navbar() {
         
         {/* Right Actions */}
         <div className="flex items-center space-x-5">
-           {!isAuthenticated ? (
+           {!isAuthenticated && !isDashboard ? (
              <div className="flex gap-3">
                <Link to="/login" className="hidden md:flex text-sm font-semibold text-slate-300 hover:text-white items-center">
                  Log In

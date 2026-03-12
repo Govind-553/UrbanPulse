@@ -86,7 +86,7 @@ export default function RiskMapPage() {
   useEffect(() => {
     const fetchLiveIssues = async () => {
       try {
-        const response = await reportService.getIssues();
+        const response = await reportService.getIssues({ public: true });
         if (response && response.data) {
           setIssues(response.data);
         }
@@ -231,7 +231,7 @@ export default function RiskMapPage() {
                           {issue.images.map((img, idx) => (
                             <img 
                               key={idx}
-                              src={`http://localhost:5000/${img}`} 
+                              src={`http://localhost:5000/${img.replace(/\\/g, '/')}`} 
                               alt={`${issueTypeLabel} ${idx + 1}`} 
                               className="w-full h-24 object-cover rounded border border-slate-200 shadow-sm"
                             />

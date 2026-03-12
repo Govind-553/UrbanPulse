@@ -57,8 +57,20 @@ export const reportService = {
   },
 
   // Fetch all issues (e.g., for map and dashboard)
-  getIssues: async () => {
-    const response = await apiClient.get('/issues');
+  getIssues: async (params = {}) => {
+    const response = await apiClient.get('/issues', { params });
+    return response.data;
+  },
+
+  // Fetch a single issue by ID
+  getIssueById: async (id) => {
+    const response = await apiClient.get(`/issues/${id}`);
+    return response.data;
+  },
+
+  // Update an issue (status etc.) — authority only
+  updateIssue: async (id, data) => {
+    const response = await apiClient.put(`/issues/${id}`, data);
     return response.data;
   }
 };

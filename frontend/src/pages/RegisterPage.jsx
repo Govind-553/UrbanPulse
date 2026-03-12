@@ -44,20 +44,6 @@ export default function RegisterPage() {
 
         {error && <div className="mb-4 bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-200">{error}</div>}
 
-        <div className="mb-6 p-4 rounded-xl border border-blue-100 bg-blue-50/50">
-          <label className="block text-sm font-bold text-slate-800 mb-3 text-center">Who are you?</label>
-          <div className="flex justify-center gap-6">
-            <label className="flex items-center space-x-2 text-sm cursor-pointer font-medium">
-              <input type="radio" value="citizen" checked={role === 'citizen'} onChange={() => setRole('citizen')} className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500" />
-              <span>Citizen</span>
-            </label>
-            <label className="flex items-center space-x-2 text-sm cursor-pointer font-medium">
-              <input type="radio" value="authority" checked={role === 'authority'} onChange={() => setRole('authority')} className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500" />
-              <span>Municipal Authority</span>
-            </label>
-          </div>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Full Name</label>
@@ -99,7 +85,7 @@ export default function RegisterPage() {
           </div>
           <button 
             type="button"
-            onClick={() => loginWithGoogle(role)}
+            onClick={() => loginWithGoogle('citizen')}
             className="mt-6 w-full flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 font-semibold py-2.5 rounded-xl hover:bg-slate-50 transition"
           >
             <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />

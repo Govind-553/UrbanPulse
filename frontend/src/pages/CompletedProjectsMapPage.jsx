@@ -24,18 +24,20 @@ const createCustomIcon = (color) => {
 };
 
 const completedIcon = createCustomIcon('#22c55e'); // Green
+const closedIcon = createCustomIcon('#64748b'); // Slate
 
 export default function CompletedProjectsMapPage() {
   const [filterType, setFilterType] = useState('All');
   const [issues, setIssues] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  // Mumbai Coordinates
-  const center = [19.0760, 72.8777];
+  // India-level center so all city markers are visible
+  const center = [20.5937, 78.9629];
 
   useEffect(() => {
     const fetchLiveIssues = async () => {
       try {
-        const response = await reportService.getIssues();
+        const response = await reportService.getIssues({ public: true });
         if (response && response.data) {
           // Filter out ONLY completed (resolved/closed) issues
           const completedIssues = response.data.filter(i => i.status === 'resolved' || i.status === 'closed');
@@ -43,6 +45,8 @@ export default function CompletedProjectsMapPage() {
         }
       } catch (err) {
         console.error("Failed to load map issues", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchLiveIssues();
@@ -98,16 +102,32 @@ export default function CompletedProjectsMapPage() {
           </div>
 
           <div className="mb-5">
+            <p className="text-sm font-semibold text-slate-700 mb-2">Statistics</p>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+              {loading ? (
+                <p className="text-sm text-slate-500 animate-pulse">Loading...</p>
+              ) : filteredIssues.length === 0 ? (
+                <p className="text-xs text-slate-500">No completed projects yet. Once municipal authorities mark issues as Resolved or Closed, they will appear here.</p>
+              ) : (
+                <>
+                  <p className="text-2xl font-bold text-green-700">{filteredIssues.length}</p>
+                  <p className="text-xs text-green-600 font-medium">Completed Projects</p>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="mb-4">
             <p className="text-sm font-semibold text-slate-700 mb-2">Legend</p>
             <div className="space-y-2 text-sm text-slate-600">
               <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div> Successfully Resolved</div>
+              <div className="flex items-center mt-1"><div className="w-3 h-3 rounded-full bg-slate-500 mr-2"></div> Officially Closed</div>
             </div>
           </div>
         </div>
 
         {/* Map Container */}
         <div className="w-full h-[calc(100vh-64px)] z-[1]">
-          <MapContainer center={center} zoom={13} style={{ height: "100%", width: "100%" }} zoomControl={false}>
+          <MapContainer center={center} zoom={6} style={{ height: "100%", width: "100%" }} zoomControl={true}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
@@ -118,12 +138,14 @@ export default function CompletedProjectsMapPage() {
               if (!issue.latitude || !issue.longitude) return null;
               
               const issueTypeLabel = categoryToType[issue.category] || 'Issue Resolved';
+              const iconToUse = issue.status === 'closed' ? closedIcon : completedIcon;
+              const statusBgColor = issue.status === 'closed' ? 'bg-slate-500' : 'bg-green-500';
 
               return (
-                <Marker key={issue._id} position={[issue.latitude, issue.longitude]} icon={completedIcon}>
+                <Marker key={issue._id} position={[issue.latitude, issue.longitude]} icon={iconToUse}>
                   <Popup>
                     <div className="font-sans w-48">
-                      <p className="font-bold text-green-700 text-sm mb-1 flex items-center gap-1">
+                      <p className={`font-bold ${issue.status === 'closed' ? 'text-slate-700' : 'text-green-700'} text-sm mb-1 flex items-center gap-1`}>
                         <CheckCircle className="w-4 h-4" /> {issueTypeLabel}
                       </p>
                       <p className="text-xs text-slate-600 mb-2">{issue.title}</p>
@@ -133,7 +155,7 @@ export default function CompletedProjectsMapPage() {
                           {issue.images.map((img, idx) => (
                             <img 
                               key={idx}
-                              src={`http://localhost:5000/${img}`} 
+                              src={`http://localhost:5000/${img.replace(/\\/g, '/')}`} 
                               alt={`${issueTypeLabel} ${idx + 1}`} 
                               className="w-full h-24 object-cover rounded border border-slate-200 shadow-sm"
                             />
@@ -145,7 +167,7 @@ export default function CompletedProjectsMapPage() {
                         <span className="text-[10px] text-slate-500 font-mono bg-slate-100 rounded px-1 w-max">
                           {issue.latitude.toFixed(6)}, {issue.longitude.toFixed(6)}
                         </span>
-                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full text-white w-max bg-green-500">
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full text-white w-max ${statusBgColor}`}>
                           {issue.status.replace('-', ' ')}
                         </span>
                       </div>
