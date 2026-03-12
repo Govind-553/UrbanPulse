@@ -3,13 +3,36 @@ import { motion } from 'framer-motion';
 import { ShieldCheck, Activity, AlertTriangle, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useStats } from '../hooks/useStats';
 
 export default function LandingPage() {
   const { isAuthenticated, role } = useAuth();
+  const { totalReports, resolvedIssues, activeRisks, loading, lastUpdated } = useStats();
+
+  const fmt = (n) => n === null ? '...' : n.toLocaleString();
+
   const stats = [
-    { icon: <Activity className="w-8 h-8 text-white" />, title: "Total Reports", value: "85,240+", desc: "Issues Registered This Month", color: "bg-brand-dark" },
-    { icon: <ShieldCheck className="w-8 h-8 text-brand-light" />, title: "Resolved Issues", value: "72,105+", desc: "Efficiently Addressed", color: "bg-brand-dark" },
-    { icon: <AlertTriangle className="w-8 h-8 text-red-400" />, title: "Active Risks", value: "135", desc: "Urgent Situations", color: "bg-brand-dark" }
+    {
+      icon: <Activity className="w-8 h-8 text-white" />,
+      title: "Total Reports",
+      value: fmt(totalReports),
+      desc: "Issues Registered in Database",
+      color: "bg-brand-dark"
+    },
+    {
+      icon: <ShieldCheck className="w-8 h-8 text-brand-light" />,
+      title: "Resolved Issues",
+      value: fmt(resolvedIssues),
+      desc: "Efficiently Addressed",
+      color: "bg-brand-dark"
+    },
+    {
+      icon: <AlertTriangle className="w-8 h-8 text-red-400" />,
+      title: "Active Risks",
+      value: fmt(activeRisks),
+      desc: "Urgent Unactioned Reports",
+      color: "bg-brand-dark"
+    }
   ];
 
   const challenges = [
@@ -91,15 +114,30 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{stat.title}</p>
-                    <h3 className="text-2xl font-extrabold text-slate-900">{stat.value}</h3>
+                    <h3 className={`text-2xl font-extrabold text-slate-900 transition-all ${loading ? 'opacity-40 animate-pulse' : ''}`}>
+                      {stat.value}
+                    </h3>
                     <p className="text-xs text-slate-600">{stat.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
+            {/* Live indicator */}
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block"></span>
+                Live Data
+              </span>
+              {lastUpdated && (
+                <span className="text-xs text-slate-400">
+                  Updated {Math.floor((Date.now() - lastUpdated.getTime()) / 1000)}s ago · auto-refreshes every 30s
+                </span>
+              )}
+            </div>
           </motion.div>
         </div>
       </section>
+
 
       {/* Common Urban Challenges */}
       <section className="bg-slate-50 py-24 px-4 sm:px-6 lg:px-8">

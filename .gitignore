@@ -7,3 +7,6 @@ backend/node_modules
 
 # Virtual Environment
 urbanpulse_env
+
+# Python cache
+__pycache__

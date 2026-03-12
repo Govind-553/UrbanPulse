@@ -34,7 +34,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] pt-16 flex items-center justify-center bg-slate-50 px-4">
+    <div className="mt-16 min-h-[calc(100vh-64px)] flex items-center justify-center bg-slate-50 px-4 py-8">
       <motion.div 
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-8"

@@ -36,11 +36,7 @@ function App() {
                 <MyReportsPage />
               </ProtectedRoute>
             } />
-            <Route path="/map" element={
-              <ProtectedRoute>
-                <RiskMapPage />
-              </ProtectedRoute>
-            } />
+            <Route path="/map" element={<RiskMapPage />} />
             <Route path="/completed-projects" element={<CompletedProjectsMapPage />} />
             
             {/* Protected by simple password for demo */}

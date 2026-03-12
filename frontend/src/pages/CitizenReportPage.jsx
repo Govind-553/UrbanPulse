@@ -19,6 +19,7 @@ export default function CitizenReportPage() {
   const [submitted, setSubmitted] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [isClassifying, setIsClassifying] = useState(false);
+  const [aiDetectedType, setAiDetectedType] = useState('');
 
   const issueTypes = [
     "Pothole",
@@ -144,6 +145,7 @@ export default function CitizenReportPage() {
     const selectedFiles = files.slice(0, 2);
 
     setFormData(prev => ({ ...prev, photos: selectedFiles }));
+    setAiDetectedType('');
     setIsClassifying(true);
 
     try {
@@ -157,33 +159,36 @@ export default function CitizenReportPage() {
       
       if (response.ok) {
         const data = await response.json();
-        if (data && Array.isArray(data) && data.length > 0) {
-          const topLabel = data[0].label?.toLowerCase() || "";
+        // Handle HuggingFace "model is loading" error gracefully
+        if (data && data.error) {
+          console.warn("AI service note:", data.error);
+        } else if (data && Array.isArray(data) && data.length > 0) {
+          // Use top-3 labels for more accurate matching
+          const labelsText = data.slice(0, 3).map(d => d.label?.toLowerCase() || '').join(' ');
           
           let detectedType = '';
-          if (topLabel.includes('pothole') || topLabel.includes('road')) {
+          if (labelsText.includes('pothole') || labelsText.includes('road') || labelsText.includes('crack') || labelsText.includes('hole') || labelsText.includes('asphalt')) {
             detectedType = 'Pothole';
-
-            // Also trigger pothole detection silently in background to show system integration
-            try {
-              fetch("http://localhost:8000/ai/detect-pothole", {
-                method: "POST",
-                body: aiFormData
-              }).then(res => res.json())
-                .then(data => console.log("Roboflow Detection Result:", data))
-                .catch(err => console.error("Detection trace failed", err));
-            } catch (e) {
-              console.error(e);
-            }
-
+            // Trigger Roboflow pothole detection silently in the background
+            fetch("http://localhost:8000/ai/detect-pothole", {
+              method: "POST",
+              body: aiFormData
+            }).then(res => res.json())
+              .then(rfData => console.log("🤖 Roboflow Detection Result:", rfData))
+              .catch(err => console.warn("Roboflow background detection:", err));
+          } else if (labelsText.includes('water') || labelsText.includes('flood') || labelsText.includes('rain') || labelsText.includes('puddle')) {
+            detectedType = 'Waterlogging';
+          } else if (labelsText.includes('drain') || labelsText.includes('sewer') || labelsText.includes('clog') || labelsText.includes('pipe')) {
+            detectedType = 'Drainage Blockage';
+          } else if (labelsText.includes('light') || labelsText.includes('lamp') || labelsText.includes('street') || labelsText.includes('bulb')) {
+            detectedType = 'Broken Streetlight';
+          } else if (labelsText.includes('garbage') || labelsText.includes('trash') || labelsText.includes('waste') || labelsText.includes('rubbish') || labelsText.includes('litter')) {
+            detectedType = 'Garbage Overflow';
           }
-          else if (topLabel.includes('water') || topLabel.includes('flood')) detectedType = 'Waterlogging';
-          else if (topLabel.includes('drain') || topLabel.includes('sewer')) detectedType = 'Drainage Blockage';
-          else if (topLabel.includes('light') || topLabel.includes('lamp') || topLabel.includes('street')) detectedType = 'Broken Streetlight';
-          else if (topLabel.includes('garbage') || topLabel.includes('trash') || topLabel.includes('waste')) detectedType = 'Garbage Overflow';
           
           if (detectedType) {
             setFormData(prev => ({ ...prev, issueType: detectedType }));
+            setAiDetectedType(detectedType);
           }
         }
       }
@@ -230,7 +235,14 @@ export default function CitizenReportPage() {
               
               {/* Issue Type */}
               <div>
-                <label className="block text-sm font-semibold text-slate-800 mb-2">Issue Type</label>
+                <label className="block text-sm font-semibold text-slate-800 mb-2">
+                  Issue Type
+                  {aiDetectedType && (
+                    <span className="ml-2 inline-flex items-center gap-1 text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-200">
+                      🤖 AI Detected: {aiDetectedType}
+                    </span>
+                  )}
+                </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {issueTypes.map(type => (
                     <div 
