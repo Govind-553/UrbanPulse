@@ -105,80 +105,107 @@ export default function IssueDetailsPage() {
   const issueLocation = issue.latitude && issue.longitude ? [issue.latitude, issue.longitude] : null;
 
   return (
-    <div className="flex-1 bg-slate-50 min-h-screen pt-20 px-4 sm:px-6 pb-12 w-full max-w-6xl mx-auto">
+    <div className="flex-1 bg-slate-50 min-h-screen pt-20 px-4 sm:px-6 lg:px-8 pb-12 w-full max-w-6xl mx-auto">
       
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 mb-2">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mb-3 line-clamp-2">
           Issue Details: <span className="text-blue-700">#{id.substring(id.length - 8).toUpperCase()}</span> — {issue.title}
         </h1>
-        <Link to="/ward-management" className="text-sm border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg inline-flex items-center transition-colors">
+        <Link to="/ward-management" className="text-xs sm:text-sm border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg inline-flex items-center transition-colors shadow-sm">
           <ChevronLeft className="w-4 h-4 mr-1" /> Back to Ward Management
         </Link>
       </div>
 
       {updateSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2 text-sm font-medium">
+        <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2 text-xs sm:text-sm font-medium shadow-sm animate-in fade-in slide-in-from-top-2">
           <CheckCircle className="w-4 h-4" /> Status updated successfully!
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         
         {/* Left Column (Info & Photos) */}
         <div className="lg:col-span-2 space-y-6">
           
           {/* Main Info Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             {/* Photos gallery */}
-            {issue.images && issue.images.length > 0 ? (
-              <div className={`grid ${issue.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-1`}>
-                {issue.images.map((img, idx) => (
-                  <img
-                    key={idx}
-                    src={`http://localhost:5000/${img.replace(/\\/g, '/')}`}
-                    alt={`Issue photo ${idx + 1}`}
-                    className="w-full h-56 object-cover"
-                    onError={(e) => { e.target.style.display = 'none'; }}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="h-40 bg-slate-100 flex items-center justify-center text-slate-400 text-sm">No photos attached</div>
-            )}
-
-            <div className="p-6">
-              <div className="flex flex-wrap justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">{issue.title}</h3>
-                  <p className="text-sm text-slate-500 capitalize">{issue.category?.replace('-', ' ')}</p>
+            <div className="bg-slate-50">
+              {issue.images && issue.images.length > 0 ? (
+                <div className={`grid ${issue.images.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'} gap-1`}>
+                  {issue.images.map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={`http://localhost:5000/${img.replace(/\\/g, '/')}`}
+                      alt={`Issue photo ${idx + 1}`}
+                      className="w-full h-56 sm:h-64 object-cover hover:opacity-95 transition-opacity cursor-pointer"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  ))}
                 </div>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${statusStyles[issue.status] || 'bg-slate-100 text-slate-800'}`}>
+              ) : (
+                <div className="h-40 sm:h-56 bg-slate-100 flex flex-col items-center justify-center text-slate-400">
+                  <User className="w-10 h-10 mb-2 opacity-20" />
+                  <p className="text-sm font-medium">No photos attached</p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-4 sm:mb-6">
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900">{issue.title}</h3>
+                  <p className="text-xs sm:text-sm text-slate-500 font-medium capitalize mt-1">{issue.category?.replace('-', ' ')}</p>
+                </div>
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider border shrink-0 ${statusStyles[issue.status] || 'bg-slate-100 text-slate-800'}`}>
                   {issue.status?.replace('-', ' ')}
                 </span>
               </div>
 
-              <p className="text-sm text-slate-700 mb-4">{issue.description}</p>
+              <div className="prose prose-slate max-w-none">
+                <p className="text-sm sm:text-base text-slate-700 leading-relaxed">{issue.description}</p>
+              </div>
 
-              <div className="space-y-2 text-sm border-t border-slate-100 pt-4">
-                <div className="flex items-start gap-2 text-slate-600">
-                  <MapPin className="w-4 h-4 mt-0.5 text-slate-400 shrink-0" />
-                  <span>{issue.location}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 sm:mt-8 pt-6 border-t border-slate-100">
+                <div className="flex items-start gap-3 text-slate-600">
+                  <div className="bg-slate-100 p-1.5 rounded-lg shrink-0">
+                    <MapPin className="w-4 h-4 text-slate-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-tight mb-0.5">Location</p>
+                    <p className="text-xs sm:text-sm font-medium line-clamp-2">{issue.location}</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-slate-600">
-                  <Calendar className="w-4 h-4 text-slate-400" />
-                  <span>Reported: {new Date(issue.createdAt).toLocaleString()}</span>
+                <div className="flex items-start gap-3 text-slate-600">
+                  <div className="bg-slate-100 p-1.5 rounded-lg shrink-0">
+                    <Calendar className="w-4 h-4 text-slate-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-tight mb-0.5">Reported On</p>
+                    <p className="text-xs sm:text-sm font-medium">{new Date(issue.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                  </div>
                 </div>
                 {issue.reportedBy && (
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <User className="w-4 h-4 text-slate-400" />
-                    <span>By: <strong>{issue.reportedBy.name}</strong> ({issue.reportedBy.email})</span>
+                  <div className="flex items-start gap-3 text-slate-600">
+                    <div className="bg-slate-100 p-1.5 rounded-lg shrink-0">
+                      <User className="w-4 h-4 text-slate-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-tight mb-0.5">Reported By</p>
+                      <p className="text-xs sm:text-sm font-medium truncate max-w-[200px]">{issue.reportedBy.name}</p>
+                    </div>
                   </div>
                 )}
                 {issue.ward && (
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <Flag className="w-4 h-4 text-slate-400" />
-                    <span>Ward: {issue.ward}</span>
+                  <div className="flex items-start gap-3 text-slate-600">
+                    <div className="bg-slate-100 p-1.5 rounded-lg shrink-0">
+                      <Flag className="w-4 h-4 text-slate-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-tight mb-0.5">Target Ward</p>
+                      <p className="text-xs sm:text-sm font-medium">{issue.ward}</p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -187,17 +214,17 @@ export default function IssueDetailsPage() {
         </div>
 
         {/* Right Column (Map & Action Form) */}
-        <div className="space-y-6">
+        <div className="space-y-6 sm:space-y-8">
           
           {/* Map Location */}
           {issueLocation && (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-              <div className="p-4 border-b border-slate-100">
-                <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-slate-400" /> Incident Location
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                <h3 className="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-red-500" /> Incident Geospatial Data
                 </h3>
               </div>
-              <div className="h-[220px] w-full relative z-0">
+              <div className="h-[200px] sm:h-[250px] w-full relative z-0">
                 <MapContainer center={issueLocation} zoom={15} style={{ height: "100%", width: "100%" }} zoomControl={false}>
                   <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
                   <Marker position={issueLocation}>
@@ -205,23 +232,26 @@ export default function IssueDetailsPage() {
                   </Marker>
                 </MapContainer>
               </div>
+              <div className="p-3 bg-white border-t border-slate-100">
+                <p className="text-[10px] text-slate-400 font-mono text-center">Lat: {issue.latitude.toFixed(6)} · Lng: {issue.longitude.toFixed(6)}</p>
+              </div>
             </div>
           )}
 
           {/* Action Panel Form */}
-          <div className="bg-slate-800 rounded-xl shadow-lg overflow-hidden border border-slate-700">
-            <div className="p-5 border-b border-slate-700">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Action Panel</h3>
-              <h2 className="text-lg font-bold text-white">Update Status</h2>
+          <div className="bg-brand-dark rounded-xl sm:rounded-2xl shadow-xl overflow-hidden border border-slate-700">
+            <div className="p-5 border-b border-white/10">
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Administrative Control</h3>
+              <h2 className="text-lg font-bold text-white">Update Resolution Status</h2>
             </div>
             
             <form onSubmit={handleUpdate} className="p-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">New Status</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Workflow Phase</label>
                 <select 
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 text-sm"
+                  className="w-full bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-3 text-sm transition-all"
                 >
                   <option value="reported">Reported</option>
                   <option value="assigned">Assigned</option>
@@ -232,40 +262,45 @@ export default function IssueDetailsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Internal Notes (optional)</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Resolution Notes</label>
                 <textarea 
                   rows="3" 
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 text-sm mb-4" 
-                  placeholder="Add crew updates, delays, or technical details..." 
+                  className="w-full bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-3 text-sm transition-all mb-1" 
+                  placeholder="Update on manpower or materials..." 
                 />
               </div>
 
               {(newStatus === 'in-progress' || newStatus === 'resolved') && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Upload Image (Proof/Progress)</label>
+                <div className="animate-in fade-in slide-in-from-top-1">
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Visual Proof (Optional)</label>
                   <input
                     id="status-image-upload"
                     type="file"
                     multiple
                     accept="image/*"
                     onChange={(e) => setImageFiles(Array.from(e.target.files))}
-                    className="w-full bg-slate-900 border border-slate-600 text-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 mb-2"
+                    className="w-full bg-slate-900 border border-slate-600 text-slate-400 rounded-xl focus:ring-2 focus:ring-blue-500 p-2.5 text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 transition-all"
                   />
                   {imageFiles.length > 0 && (
-                    <p className="text-xs text-slate-400">{imageFiles.length} file(s) selected</p>
+                    <p className="mt-2 text-[10px] text-blue-400 font-bold">{imageFiles.length} item(s) staged for upload</p>
                   )}
                 </div>
               )}
 
-              <div className="pt-1 flex flex-col gap-3">
+              <div className="pt-2">
                 <button 
                   type="submit" 
                   disabled={updating}
-                  className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition-colors shadow-sm text-sm"
+                  className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-lg text-sm uppercase tracking-widest"
                 >
-                  {updating ? 'Updating...' : 'Submit Update'}
+                  {updating ? (
+                    <span className="flex items-center justify-center">
+                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2"></div>
+                      Processing...
+                    </span>
+                  ) : 'Commit Changes'}
                 </button>
               </div>
             </form>

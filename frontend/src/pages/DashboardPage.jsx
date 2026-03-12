@@ -85,86 +85,86 @@ export default function DashboardPage() {
     <div className="flex-1 bg-slate-50 min-h-screen pt-20 px-4 sm:px-6 lg:px-8 pb-12 w-full max-w-7xl mx-auto">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Municipal Authority Dashboard</h1>
           <p className="text-sm text-slate-500 font-medium">Overview of city infrastructure issues and resolution metrics.</p>
         </div>
-        <div className="flex gap-3">
-          <div className="flex items-center space-x-2 bg-white border border-slate-300 text-slate-700 font-medium px-4 py-2 rounded-lg shadow-sm text-sm">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex items-center space-x-2 bg-white border border-slate-300 text-slate-700 font-medium px-4 py-2 rounded-lg shadow-sm text-xs sm:text-sm">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
             <span>Live Sync: Active</span>
             {lastUpdated && (
-              <span className="text-slate-400 text-xs">· {Math.floor((Date.now() - lastUpdated.getTime()) / 1000)}s ago</span>
+              <span className="text-slate-400 text-[10px] sm:text-xs">· {Math.floor((Date.now() - lastUpdated.getTime()) / 1000)}s ago</span>
             )}
           </div>
-          <button className="bg-blue-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-blue-700 shadow-sm text-sm flex items-center">
+          <button className="bg-blue-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-blue-700 shadow-sm text-xs sm:text-sm flex items-center justify-center">
             <FileText className="w-4 h-4 mr-2" /> Export Report
           </button>
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
         
         {/* Card 1 - Live Total */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center">
-          <div className="bg-blue-100 p-3 rounded-xl mr-4">
+          <div className="bg-blue-100 p-3 rounded-xl mr-4 shrink-0">
             <FileText className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Total Complaints</p>
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Total Complaints</p>
             <h3 className={`text-2xl font-bold text-slate-900 ${statsLoading ? 'animate-pulse opacity-40' : ''}`}>
               {fmt(totalReports)}
             </h3>
-            <p className="text-xs text-slate-500 font-medium mt-1">Live from database</p>
+            <p className="text-[10px] text-slate-500 font-medium mt-1">Live from database</p>
           </div>
         </div>
 
         {/* Card 2 - Live AI Risk */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center">
-          <div className="bg-red-100 p-3 rounded-xl mr-4">
+          <div className="bg-red-100 p-3 rounded-xl mr-4 shrink-0">
             <Brain className="w-6 h-6 text-red-600" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">City Risk Index (AI)</p>
-            <div className="flex items-baseline gap-2">
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">City Risk Index (AI)</p>
+            <div className="flex items-baseline gap-2 flex-wrap">
               <h3 className={`text-2xl font-bold ${riskScore ? riskColor : 'text-slate-900'}`}>
                 {riskScore ? `${riskScore}%` : '...'}
               </h3>
               {riskScore && (
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${riskBadgeBg}`}>{riskLevel}</span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${riskBadgeBg}`}>{riskLevel}</span>
               )}
             </div>
-            <p className="text-xs text-slate-500 font-medium mt-1">Complaints + weather weighted</p>
+            <p className="text-[10px] text-slate-500 font-medium mt-1 truncate">Complaints + weather weighted</p>
           </div>
         </div>
 
         {/* Card 3 - Resolution Rate (real) */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center">
-          <div className="bg-green-100 p-3 rounded-xl mr-4">
+          <div className="bg-green-100 p-3 rounded-xl mr-4 shrink-0">
             <CheckCircle className="w-6 h-6 text-green-600" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Resolution Rate</p>
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Resolution Rate</p>
             <h3 className={`text-2xl font-bold text-green-700 ${statsLoading ? 'animate-pulse opacity-40' : ''}`}>
               {resolutionRate !== null ? `${resolutionRate}%` : '...'}
             </h3>
-            <p className="text-xs text-slate-500 font-medium mt-1">Resolved ÷ Total issues</p>
+            <p className="text-[10px] text-slate-500 font-medium mt-1">Resolved ÷ Total issues</p>
           </div>
         </div>
 
         {/* Card 4 - Active Risks (real) */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center">
-          <div className="bg-purple-100 p-3 rounded-xl mr-4">
+          <div className="bg-purple-100 p-3 rounded-xl mr-4 shrink-0">
             <Clock className="w-6 h-6 text-purple-600" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">In Progress</p>
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">In Progress</p>
             <h3 className={`text-2xl font-bold text-purple-700 ${statsLoading ? 'animate-pulse opacity-40' : ''}`}>
               {fmt(inProgress)}
             </h3>
-            <p className="text-xs text-slate-500 font-medium mt-1">Currently being worked on</p>
+            <p className="text-[10px] text-slate-500 font-medium mt-1">Currently being worked on</p>
           </div>
         </div>
 
@@ -174,11 +174,11 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         
         {/* Trend Area Chart (Spans 2 columns) */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 lg:col-span-2">
-          <h3 className="text-base font-bold text-slate-800 mb-6">Monthly Infrastructure Risk Trends</h3>
-          <div className="h-72 w-full">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100 lg:col-span-2">
+          <h3 className="text-sm sm:text-base font-bold text-slate-800 mb-6">Monthly Infrastructure Risk Trends</h3>
+          <div className="h-64 sm:h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthlyTrends} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <AreaChart data={monthlyTrends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorComplaints" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
@@ -189,13 +189,13 @@ export default function DashboardPage() {
                     <stop offset="95%" stopColor="#22c55e" stopOpacity={0.1}/>
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                 <RechartsTooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
                 />
-                <Legend verticalAlign="top" height={36} iconType="circle" />
+                <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
                 <Area type="monotone" dataKey="complaints" name="New Complaints" stroke="#ef4444" fillOpacity={1} fill="url(#colorComplaints)" />
                 <Area type="monotone" dataKey="resolved" name="Resolved Issues" stroke="#22c55e" fillOpacity={1} fill="url(#colorResolved)" />
               </AreaChart>
@@ -204,9 +204,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Pie Chart (Issue Type Distribution) */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="text-base font-bold text-slate-800 mb-6">Issue Type Distribution</h3>
-          <div className="h-72 w-full">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100">
+          <h3 className="text-sm sm:text-base font-bold text-slate-800 mb-6">Issue Type Distribution</h3>
+          <div className="h-64 sm:h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -214,7 +214,7 @@ export default function DashboardPage() {
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
-                  outerRadius={90}
+                  outerRadius={80}
                   paddingAngle={5}
                   dataKey="value"
                   labelLine={false}
@@ -224,10 +224,10 @@ export default function DashboardPage() {
                   ))}
                 </Pie>
                 <RechartsTooltip 
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
                   formatter={(value) => [`${value}%`, 'Share']}
                 />
-                <Legend layout="horizontal" verticalAlign="bottom" align="center" iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                <Legend layout="horizontal" verticalAlign="bottom" align="center" iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -236,45 +236,45 @@ export default function DashboardPage() {
       </div>
 
       {/* Ward AI Risk Intelligence Panel */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-        <div className="flex items-center justify-between mb-5">
+      <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
           <div>
-            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2">
               <ShieldAlert className="w-5 h-5 text-red-500" />
               AI Ward Risk Intelligence
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">Risk scores computed from live issue counts per ward · Formula: complaints (40%) + rainfall (40%) + road density (20%)</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Complaints (40%) + Rainfall (40%) + Density (20%)</p>
           </div>
-          <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100">🤖 AI Powered</span>
+          <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100 w-fit">🤖 AI Powered</span>
         </div>
 
         {wardRiskData.length === 0 ? (
-          <div className="text-center py-10 text-slate-400">
+          <div className="text-center py-10 text-slate-400 text-sm">
             {isLoadingRisk
               ? <p className="animate-pulse">Computing AI risk scores from live data...</p>
               : <p>No ward data available yet. Submit some issues to see risk scores!</p>
             }
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {wardRiskData.map((w) => (
-              <div key={w.ward} className="flex items-center gap-4">
-                <div className="w-20 shrink-0">
-                  <p className="text-sm font-semibold text-slate-700 truncate">{w.ward}</p>
-                  <p className="text-xs text-slate-400">{w.complaints} issues</p>
+              <div key={w.ward} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <div className="w-full sm:w-28 shrink-0 flex justify-between sm:block">
+                  <p className="text-xs sm:text-sm font-semibold text-slate-700 truncate">{w.ward}</p>
+                  <p className="text-[10px] text-slate-400">{w.complaints} reported</p>
                 </div>
                 <div className="flex-1">
-                  <div className="w-full bg-slate-100 rounded-full h-3">
+                  <div className="w-full bg-slate-100 rounded-full h-2.5 sm:h-3">
                     <div
-                      className="h-3 rounded-full transition-all duration-700"
+                      className="h-2.5 sm:h-3 rounded-full transition-all duration-700"
                       style={{ width: `${w.riskScore}%`, backgroundColor: w.color }}
                     />
                   </div>
                 </div>
-                <div className="w-24 text-right shrink-0">
-                  <span className="text-sm font-bold text-slate-800">{w.riskScore}%</span>
+                <div className="w-full sm:w-24 text-right shrink-0 flex items-center justify-end sm:block">
+                  <span className="text-xs sm:text-sm font-bold text-slate-800">{w.riskScore}%</span>
                   <span
-                    className="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    className="ml-2 text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                     style={{
                       backgroundColor: w.color + '20',
                       color: w.color

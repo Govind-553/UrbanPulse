@@ -181,17 +181,17 @@ export default function RiskMapPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen pt-16">
+    <div className="flex flex-col h-screen pt-16 bg-slate-50">
 
       {/* ── Top Header Bar ── */}
-      <div className="bg-white px-6 py-3 shrink-0 border-b border-slate-200 shadow-sm z-10 flex justify-between items-center">
-        <div>
-          <h1 className="text-xl font-bold text-slate-800 tracking-tight">Infrastructure Risk &amp; Monsoon Map</h1>
-          <p className="text-xs text-slate-500 font-medium">Real-time AI weather + citizen-reported flood risk · Mumbai</p>
+      <div className="bg-white px-4 sm:px-6 py-3 shrink-0 border-b border-slate-200 shadow-sm z-20 flex flex-wrap justify-between items-center gap-3">
+        <div className="min-w-0">
+          <h1 className="text-lg sm:text-xl font-bold text-slate-800 tracking-tight truncate">Infrastructure Risk & Monsoon Map</h1>
+          <p className="text-[10px] sm:text-xs text-slate-500 font-medium">Real-time AI weather + citizen flood reports · Mumbai</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Live header stats */}
+        <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+          {/* Live header stats - Desktop Only */}
           {weatherFull && (
             <div className="hidden lg:flex bg-slate-50 border border-slate-200 rounded-xl p-2 gap-4 divide-x divide-slate-200">
               <div className="flex items-center px-3 gap-2">
@@ -221,165 +221,145 @@ export default function RiskMapPage() {
           {/* Monsoon toggle button */}
           <button
             onClick={() => setShowMonsoonLayer(v => !v)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm ${
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-xs transition-all shadow-sm ${
               showMonsoonLayer
-                ? 'bg-blue-600 text-white shadow-blue-200 shadow-md'
+                ? 'bg-blue-600 text-white shadow-blue-200 shadow-md transform scale-105'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
             <CloudRain className="w-4 h-4" />
-            Monsoon Risk Layer
-            {showMonsoonLayer && weatherFull?.rain1h > 0 && (
-              <span className="ml-1 bg-white/20 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">LIVE</span>
-            )}
+            <span className="hidden xs:inline">Monsoon Risk</span>
+            <span className="xs:hidden">Risk</span>
+            {showMonsoonLayer && <span className="ml-1 bg-white/20 text-white text-[8px] font-black px-1 py-0.5 rounded-full">LIVE</span>}
           </button>
         </div>
       </div>
 
-      <div className="flex-1 relative flex overflow-hidden">
+      <div className="flex-1 relative flex flex-col lg:flex-row overflow-hidden">
 
-        {/* ── Left Sidebar ── */}
-        <div className="absolute left-4 top-4 z-[400] w-68 space-y-3" style={{ width: '17rem' }}>
+        {/* ── Sidebar (Absolute on Desktop, Drawer style on Mobile) ── */}
+        <div className={`
+          z-[400] transition-all duration-300 ease-in-out
+          lg:absolute lg:left-4 lg:top-4 lg:w-[18rem] lg:space-y-4
+          ${showMonsoonLayer ? 'flex flex-col shrink-0 overflow-y-auto max-h-[40vh] lg:max-h-[calc(100vh-120px)] bg-slate-50 lg:bg-transparent p-4 lg:p-0 border-b lg:border-0 border-slate-200 shadow-xl lg:shadow-none' : 'hidden lg:block lg:p-0'}
+        `}>
 
           {/* Filters card */}
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-slate-100">
-            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-widest mb-3 flex items-center">
-              <Layers className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> Filters
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-slate-100 mb-4 lg:mb-0">
+            <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center">
+              <Layers className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> Infrastructure Filter
             </h3>
             <select
               value={filterType}
               onChange={e => setFilterType(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
+              className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl focus:ring-2 focus:ring-blue-500 block p-2.5 outline-none transition-all"
             >
-              <option value="All">All Issues</option>
-              <option value="Pothole">Pothole</option>
-              <option value="Waterlogging">Waterlogging</option>
-              <option value="Drainage Blockage">Drainage Blockage</option>
-              <option value="Broken Streetlight">Broken Streetlight</option>
-              <option value="Garbage Overflow">Garbage Overflow</option>
+              <option value="All">View All Reports</option>
+              {Object.values(categoryToType).map(v => <option key={v} value={v}>{v}</option>)}
             </select>
 
-            <div className="mt-3 space-y-1.5 text-xs text-slate-600">
-              <p className="font-semibold text-slate-700 mb-1">Legend</p>
-              {[['bg-red-500','Critical / Unresolved'],['bg-yellow-500','In Progress'],['bg-green-500','Resolved']].map(([bg,lbl])=>(
-                <div key={lbl} className="flex items-center gap-2"><div className={`w-2.5 h-2.5 rounded-full ${bg}`}></div>{lbl}</div>
-              ))}
-              {showMonsoonLayer && (
-                <>
-                  <div className="border-t border-slate-100 my-2"></div>
-                  <p className="font-semibold text-slate-700 mb-1">Flood Risk Zones</p>
-                  {[['bg-red-400','High severity'],['bg-amber-400','Medium severity'],['bg-blue-400','Low / Preventive']].map(([bg,lbl])=>(
-                    <div key={lbl} className="flex items-center gap-2"><div className={`w-2.5 h-2.5 rounded-full ${bg}`}></div>{lbl}</div>
-                  ))}
-                  {waterlogClusters.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-pink-500"></div>
-                      Live waterlogging reports
-                    </div>
-                  )}
-                </>
-              )}
+            <div className="mt-4 space-y-2 text-[10px] text-slate-500">
+              <p className="font-bold text-slate-400 uppercase tracking-tight mb-1">Status Legend</p>
+              <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+                {[
+                  { bg: 'bg-red-500', lbl: 'Critical', border: 'border-red-100' },
+                  { bg: 'bg-yellow-500', lbl: 'Active', border: 'border-yellow-100' },
+                  { bg: 'bg-green-500', lbl: 'Safe', border: 'border-green-100' }
+                ].map(({ bg, lbl, border }) => (
+                  <div key={lbl} className={`flex items-center gap-1.5 px-2 py-1 rounded-full border ${border} bg-white shadow-sm`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${bg}`}></div>
+                    <span className="font-bold">{lbl}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* ── Live Monsoon Panel (only when layer is active) ── */}
-          {showMonsoonLayer && (
-            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-blue-100 overflow-hidden">
+          {/* ── Live Monsoon Panel (only when layer is active or on desktop) ── */}
+          {(showMonsoonLayer) && (
+            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-blue-100 overflow-hidden animate-in slide-in-from-left-2 duration-300">
               {/* Panel header */}
-              <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-4 py-3 flex items-center justify-between">
+              <div className="bg-brand-dark px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CloudRain className="w-4 h-4 text-white" />
-                  <span className="text-sm font-bold text-white">Monsoon Intelligence</span>
-                  <span className="text-[10px] bg-white/20 text-white px-1.5 py-0.5 rounded-full font-bold">LIVE</span>
+                  <CloudRain className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="text-xs font-bold text-white uppercase tracking-wider">Monsoon Intelligence</span>
+                  <span className="text-[8px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded-full font-black animate-pulse">LIVE</span>
                 </div>
                 {weatherFull?.fetchedAt && (
-                  <span className="text-[10px] text-blue-100">
+                  <span className="text-[9px] text-slate-400 font-mono">
                     {weatherFull.fetchedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 )}
               </div>
 
               {isLoadingWeather ? (
-                <div className="p-4 text-center">
-                  <RefreshCw className="w-5 h-5 text-blue-400 animate-spin mx-auto mb-2" />
-                  <p className="text-xs text-slate-500">Fetching live weather…</p>
+                <div className="p-6 text-center">
+                  <RefreshCw className="w-5 h-5 text-blue-500 animate-spin mx-auto mb-2" />
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Synchronizing AI Data…</p>
                 </div>
               ) : weatherError ? (
                 <div className="p-4 text-center">
                   <AlertTriangle className="w-5 h-5 text-red-400 mx-auto mb-1" />
-                  <p className="text-xs text-red-500">Couldn't reach weather service. Is the AI server running?</p>
-                  <button onClick={fetchWeatherAndRisk} className="mt-2 text-xs text-blue-600 underline">Retry</button>
+                  <p className="text-[10px] text-red-500 font-bold">API Offline</p>
+                  <button onClick={fetchWeatherAndRisk} className="mt-2 text-[10px] text-blue-600 underline font-bold">Re-check System</button>
                 </div>
               ) : weatherFull ? (
-                <div className="p-4 space-y-3">
+                <div className="p-4 space-y-4">
 
                   {/* Flood risk badge */}
-                  <div className={`flex items-center gap-2 text-xs font-bold p-2 rounded-lg border ${floodRisk.bg}`}>
+                  <div className={`flex items-center justify-center gap-2 text-[10px] font-black p-2.5 rounded-xl border uppercase tracking-widest ${floodRisk.bg}`}>
+                    <Activity className={`w-3.5 h-3.5 ${floodRisk.color}`} />
                     <span className={floodRisk.color}>{floodRisk.label}</span>
                   </div>
 
                   {/* Weather metrics grid */}
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { icon: <Thermometer className="w-3.5 h-3.5 text-orange-500"/>, label:'Temp', value:`${weatherFull.temp}°C` },
-                      { icon: <Droplets className="w-3.5 h-3.5 text-blue-500"/>, label:'Humidity', value:`${weatherFull.humidity}%` },
-                      { icon: <Wind className="w-3.5 h-3.5 text-slate-500"/>, label:'Wind', value:`${weatherFull.windSpeed} m/s ${windCompass(weatherFull.windDir)}` },
-                      { icon: <CloudRain className="w-3.5 h-3.5 text-blue-600"/>, label:'Rainfall', value: weatherFull.rain1h > 0 ? `${weatherFull.rain1h} mm/hr` : 'None' },
-                      { icon: <Eye className="w-3.5 h-3.5 text-slate-500"/>, label:'Visibility', value: weatherFull.visibility ? `${weatherFull.visibility} km` : 'N/A' },
-                      { icon: <Gauge className="w-3.5 h-3.5 text-purple-500"/>, label:'Cloud Cover', value:`${weatherFull.clouds}%` },
+                      { icon: <Thermometer className="w-3 h-3 text-orange-500"/>, label:'Temp', value:`${weatherFull.temp}°C` },
+                      { icon: <Droplets className="w-3 h-3 text-blue-500"/>, label:'Humidity', value:`${weatherFull.humidity}%` },
+                      { icon: <Wind className="w-3 h-3 text-slate-400"/>, label:'Wind', value:`${weatherFull.windSpeed} m/s` },
+                      { icon: <CloudRain className="w-3 h-3 text-blue-600"/>, label:'Rain', value: weatherFull.rain1h > 0 ? `${weatherFull.rain1h}mm` : '0mm' },
                     ].map(({ icon, label, value }) => (
-                      <div key={label} className="bg-slate-50 rounded-lg p-2 flex items-start gap-1.5">
-                        {icon}
-                        <div>
-                          <p className="text-[9px] text-slate-400 uppercase font-bold">{label}</p>
-                          <p className="text-xs font-bold text-slate-800 leading-tight">{value}</p>
+                      <div key={label} className="bg-slate-50 rounded-xl p-2.5 flex flex-col gap-1 border border-slate-100">
+                        <div className="flex items-center gap-1.5">
+                          {icon}
+                          <p className="text-[8px] text-slate-400 uppercase font-black tracking-tighter">{label}</p>
                         </div>
+                        <p className="text-xs font-black text-slate-800 tracking-tight">{value}</p>
                       </div>
                     ))}
                   </div>
 
                   {/* Rainfall scale indicator */}
-                  <div>
-                    <div className="flex justify-between text-[9px] text-slate-400 mb-1">
-                      <span>Rainfall Intensity</span>
-                      <span>{weatherFull.rain1h > 0
-                        ? weatherFull.rain1h < 2.5 ? 'Light' : weatherFull.rain1h < 7.5 ? 'Moderate' : weatherFull.rain1h < 15 ? 'Heavy' : 'Very Heavy'
-                        : 'Dry'}
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <div className="flex justify-between text-[9px] font-bold text-slate-400 mb-2 uppercase tracking-tight">
+                      <span>Precipitation Load</span>
+                      <span className={weatherFull.rain1h > 15 ? 'text-red-600' : 'text-blue-600'}>
+                        {weatherFull.rain1h > 0 ? (weatherFull.rain1h < 7.5 ? 'Moderate' : 'Heavy') : 'Optimal'}
                       </span>
                     </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2">
+                    <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
                       <div
-                        className="h-2 rounded-full transition-all duration-500"
+                        className="h-full rounded-full transition-all duration-1000 ease-out"
                         style={{
                           width: `${Math.min((weatherFull.rain1h / 30) * 100, 100)}%`,
-                          background: weatherFull.rain1h > 15 ? '#ef4444' : weatherFull.rain1h > 7.5 ? '#f59e0b' : '#3b82f6'
+                          background: 'linear-gradient(90deg, #3b82f6, #ef4444)'
                         }}
                       />
                     </div>
                   </div>
 
                   {/* Zone count summary */}
-                  <div className="border-t border-slate-100 pt-2">
-                    <p className="text-[10px] text-slate-500 font-semibold uppercase mb-1">Flood Zone Summary</p>
-                    <div className="flex gap-2 flex-wrap">
-                      <span className="text-[10px] bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full font-bold">
-                        {MUMBAI_FLOOD_ZONES.filter(z=>z.severity==='high').length} High
+                  <div className="pt-2 border-t border-slate-100">
+                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-2">Monsoon Impact Nodes</p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      <span className="text-[8px] bg-red-50 text-red-700 border border-red-200 px-2 py-1 rounded-lg font-black uppercase">
+                        {MUMBAI_FLOOD_ZONES.filter(z=>z.severity==='high').length} High Risk
                       </span>
-                      <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-bold">
-                        {MUMBAI_FLOOD_ZONES.filter(z=>z.severity==='medium').length} Medium
+                      <span className="text-[8px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded-lg font-black uppercase">
+                        {waterlogClusters.length} Active Floods
                       </span>
-                      <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full font-bold">
-                        {MUMBAI_FLOOD_ZONES.filter(z=>z.severity==='low').length} Low
-                      </span>
-                      {waterlogClusters.length > 0 && (
-                        <span className="text-[10px] bg-pink-50 text-pink-700 border border-pink-200 px-2 py-0.5 rounded-full font-bold">
-                          {waterlogClusters.length} Live Reports
-                        </span>
-                      )}
                     </div>
-                    <p className="text-[9px] text-slate-400 mt-2 leading-relaxed">
-                      Zone radii expand dynamically with rainfall. Currently at <strong>{rainMulitplier.toFixed(1)}×</strong> base size.
-                    </p>
                   </div>
                 </div>
               ) : null}
@@ -388,7 +368,7 @@ export default function RiskMapPage() {
         </div>
 
         {/* ── Map ── */}
-        <div className="w-full h-full z-[1]">
+        <div className="w-full flex-1 z-[1] min-h-[50vh]">
           <MapContainer center={MUMBAI_CENTER} zoom={13} style={{ height: '100%', width: '100%' }} zoomControl={false}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -402,25 +382,23 @@ export default function RiskMapPage() {
               const colorStatus = mapStatusToColorStatus(issue.status);
               return (
                 <Marker key={issue._id} position={[issue.latitude, issue.longitude]} icon={icons[colorStatus]}>
-                  <Popup>
-                    <div className="font-sans w-48">
-                      <p className="font-bold text-slate-800 text-sm mb-1">{label}</p>
-                      <p className="text-xs text-slate-600 mb-2">{issue.title}</p>
+                  <Popup className="custom-popup">
+                    <div className="font-sans w-48 p-1">
+                      <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-0.5">{label}</p>
+                      <h4 className="font-bold text-slate-800 text-sm mb-2">{issue.title}</h4>
                       {issue.images?.length > 0 && (
-                        <div className={`mb-2 gap-1 grid ${issue.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                        <div className={`mb-3 gap-1 grid ${issue.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                           {issue.images.map((img, idx) => (
                             <img key={idx} src={`http://localhost:5000/${img.replace(/\\/g, '/')}`}
-                              alt={`${label} ${idx + 1}`} className="w-full h-24 object-cover rounded border border-slate-200 shadow-sm" />
+                              alt={`${label} ${idx + 1}`} className="w-full h-24 object-cover rounded-lg border border-slate-200 shadow-sm" />
                           ))}
                         </div>
                       )}
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] text-slate-400 font-mono bg-slate-100 rounded px-1 w-max">
-                          {issue.latitude.toFixed(5)}, {issue.longitude.toFixed(5)}
-                        </span>
-                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full text-white w-max ${
-                          colorStatus === 'safe' ? 'bg-green-500' : colorStatus === 'moderate' ? 'bg-yellow-500' : 'bg-red-500'
-                        }`}>{issue.status}</span>
+                      <div className="flex items-center justify-between gap-2 border-t border-slate-100 pt-2">
+                         <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg text-white ${
+                            colorStatus === 'safe' ? 'bg-green-500' : colorStatus === 'moderate' ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}>{issue.status}</span>
+                         <span className="text-[9px] text-slate-400 font-mono">Ward {issue.ward?.split(' ')[1] || 'N/A'}</span>
                       </div>
                     </div>
                   </Popup>
@@ -444,16 +422,15 @@ export default function RiskMapPage() {
                       pathOptions={{ fillColor: fill, fillOpacity, color: stroke, weight: 1.5, dashArray: '6 4' }}
                     >
                       <Popup>
-                        <div className="font-sans">
-                          <p className="font-bold text-slate-800 text-sm">🌊 {zone.name}</p>
-                          <p className="text-xs text-slate-500 mt-1">
-                            Severity: <span className={`font-bold ${zone.severity === 'high' ? 'text-red-600' : zone.severity === 'medium' ? 'text-amber-600' : 'text-blue-600'}`}>
-                              {zone.severity.toUpperCase()}
+                        <div className="font-sans p-1">
+                          <p className="font-black text-slate-800 text-xs uppercase tracking-tight mb-1">🌊 {zone.name}</p>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border ${zone.severity === 'high' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-amber-50 text-amber-600 border-amber-200'}`}>
+                              {zone.severity} SEVERITY
                             </span>
-                          </p>
-                          <p className="text-xs text-slate-500">Risk radius: <strong>{Math.round(radius)}m</strong></p>
-                          <p className="text-xs text-slate-500">Rainfall now: <strong>{weatherFull?.rain1h > 0 ? `${weatherFull.rain1h} mm/hr` : 'Dry'}</strong></p>
-                          <p className="text-[10px] text-slate-400 mt-1">Zone radius expands dynamically with live rainfall data.</p>
+                          </div>
+                          <p className="text-[10px] text-slate-500 font-medium">Potential impact radius: <strong className="text-slate-800">{Math.round(radius)}m</strong></p>
+                          <p className="text-[10px] text-slate-400 mt-2 leading-relaxed italic">Calculated using live topography + real-time OpenWeather precipitation data.</p>
                         </div>
                       </Popup>
                     </Circle>
@@ -469,11 +446,10 @@ export default function RiskMapPage() {
                     pathOptions={{ fillColor: '#ec4899', fillOpacity: 0.35, color: '#be185d', weight: 2 }}
                   >
                     <Popup>
-                      <div className="font-sans">
-                        <p className="font-bold text-pink-700 text-sm">🚨 Active {wl.category === 'waterlogging' ? 'Waterlogging' : 'Drainage'} Report</p>
-                        <p className="text-xs text-slate-600 mt-1">{wl.title}</p>
-                        <p className="text-xs text-slate-500">Status: <strong className="text-yellow-600">{wl.status}</strong></p>
-                        <p className="text-[10px] text-slate-400 mt-1">This is a citizen-reported water issue at this location.</p>
+                      <div className="font-sans p-1 text-center">
+                        <p className="font-black text-pink-700 text-[10px] uppercase tracking-widest mb-1">Live Incident Cluster</p>
+                        <h4 className="font-bold text-slate-800 text-sm mb-1">{wl.category === 'waterlogging' ? 'Urban Flood' : 'Drain Failure'}</h4>
+                        <p className="text-[10px] text-slate-400 font-medium">{wl.title}</p>
                       </div>
                     </Popup>
                   </Circle>

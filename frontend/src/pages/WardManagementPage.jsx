@@ -53,8 +53,8 @@ export default function WardManagementPage() {
       
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Ward Management Panel</h1>
-        <p className="text-sm text-slate-500 font-medium mt-1">Manage and assign tasks for reported civic issues.</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Ward Management Panel</h1>
+        <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">Manage and assign tasks for reported civic issues.</p>
       </div>
 
       {/* Main Panel Container */}
@@ -69,13 +69,13 @@ export default function WardManagementPage() {
             <input 
               type="text" 
               className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg text-sm bg-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-shadow" 
-              placeholder="Search complaints, issue types, or location..." 
+              placeholder="Search complaints..." 
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-            {['Status', 'Date Range', 'Issue Type', 'Sort By'].map((filter) => (
-              <button key={filter} className="flex items-center space-x-2 px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors bg-white shadow-sm">
+          <div className="flex overflow-x-auto lg:overflow-visible items-center gap-2 w-full lg:w-auto pb-2 lg:pb-0 scrollbar-hide">
+            {['Status', 'Type', 'Ward', 'Date'].map((filter) => (
+              <button key={filter} className="flex-shrink-0 flex items-center space-x-2 px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors bg-white shadow-sm whitespace-nowrap">
                 <span>{filter}</span>
                 <Filter className="w-3 h-3 text-slate-400" />
               </button>
@@ -83,71 +83,86 @@ export default function WardManagementPage() {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
+        {/* Table Wrapper for Horizontal Scroll */}
+        <div className="overflow-x-auto relative">
           <table className="min-w-full divide-y divide-slate-200 text-left">
-            <thead className="bg-slate-50">
+            <thead className="bg-slate-50 font-bold">
               <tr>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider w-1/4">Issue Type</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider w-32">Photo</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider w-1/5">Reported Date</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider w-32">Status</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider min-w-[200px]">Issue Details</th>
+                <th className="px-6 py-4 text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider min-w-[120px]">Photo Proof</th>
+                <th className="px-6 py-4 text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider">Reported</th>
+                <th className="px-6 py-4 text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-4 text-center text-sm text-slate-500">Loading issues...</td>
+                  <td colSpan="5" className="px-6 py-10 text-center text-sm text-slate-500">
+                    <div className="animate-pulse flex flex-col items-center">
+                      <div className="h-4 w-48 bg-slate-200 rounded mb-2"></div>
+                      <p>Loading city issues...</p>
+                    </div>
+                  </td>
                 </tr>
               ) : issues.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-4 text-center text-sm text-slate-500">No issues found.</td>
+                  <td colSpan="5" className="px-6 py-10 text-center text-sm text-slate-500">No issues found.</td>
                 </tr>
               ) : (
                 issues.map((row) => (
                   <tr key={row._id} className="hover:bg-slate-50/80 transition-colors group">
                     <td className="px-6 py-4">
                       <Link to={`/issue/${row._id}`} className="block">
-                        <span className="text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors">{row.title || row.category}</span>
-                        <p className="text-xs text-slate-500 mt-1">{row.ward}</p>
+                        <span className="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors line-clamp-1">{row.title || row.category}</span>
+                        <div className="flex items-center gap-2 mt-1">
+                           <p className="text-[10px] text-slate-400 font-semibold uppercase">{row.ward}</p>
+                           <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                           <p className="text-[10px] text-slate-500 capitalize">{row.category?.replace('-', ' ')}</p>
+                        </div>
                       </Link>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {row.images && row.images.length > 0 ? (
-                        <div className="flex gap-1 flex-wrap">
+                        <div className="flex -space-x-4">
                           {row.images.slice(0, 2).map((img, idx) => (
                             <img
                               key={idx}
                               src={`http://localhost:5000/${img.replace(/\\/g, '/')}`}
                               alt={`Photo ${idx + 1}`}
-                              className="h-14 w-20 object-cover rounded-md border border-slate-200 shadow-sm bg-slate-100"
+                              className="h-10 w-14 object-cover rounded border-2 border-white shadow-sm bg-slate-100"
                               onError={(e) => { e.currentTarget.style.display = 'none'; }}
                             />
                           ))}
+                          {row.images.length > 2 && (
+                             <div className="h-10 w-10 rounded bg-slate-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-500">+{row.images.length - 2}</div>
+                          )}
                         </div>
                       ) : (
-                        <div className="h-14 w-20 bg-slate-200 rounded-md flex items-center justify-center text-xs text-slate-500">No Image</div>
+                        <div className="text-[10px] italic text-slate-400">No Image</div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                      {new Date(row.createdAt).toLocaleDateString()}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <p className="text-xs font-medium text-slate-600">{new Date(row.createdAt).toLocaleDateString()}</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">{new Date(row.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${statusStyles[row.status] || 'bg-slate-100 text-slate-800'}`}>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusStyles[row.status] || 'bg-slate-100 text-slate-800'}`}>
                         {row.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                       <div className="flex space-x-2">
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                       <div className="flex items-center justify-end space-x-2">
                           <button 
                             onClick={() => assignTask(row._id)}
                             disabled={row.status !== 'reported'}
-                            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-lg shadow-sm transition-colors text-xs font-medium"
+                            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-lg shadow-sm transition-colors text-[10px] font-bold uppercase"
                           >
-                            {row.status === 'assigned' ? 'Assigned ✓' : 'Assign Task'}
+                            {row.status === 'assigned' ? 'Assigned' : 'Assign'}
                           </button>
-                          <Link to={`/issue/${row._id}`} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg shadow-sm transition-colors text-xs font-medium">Update Status</Link>
+                          <Link to={`/issue/${row._id}`} className="bg-white hover:bg-slate-50 text-slate-600 border border-slate-300 p-1.5 rounded-lg transition-colors">
+                             <MoreVertical className="w-4 h-4" />
+                          </Link>
                        </div>
                     </td>
                   </tr>
@@ -159,18 +174,16 @@ export default function WardManagementPage() {
 
         {/* Pagination */}
         <div className="px-6 py-4 border-t border-slate-200 bg-white flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-sm text-slate-600">
-            Showing <span className="font-semibold text-slate-900">1-5</span> of <span className="font-semibold text-slate-900">50</span> records
+          <div className="text-xs text-slate-500 font-medium">
+            Showing <span className="text-slate-900">1-5</span> of <span className="text-slate-900">{issues.length}</span> issues
           </div>
-          <div className="flex items-center space-x-2">
-            <button className="p-2 rounded border border-slate-200 text-slate-400 hover:bg-slate-50 disabled:opacity-50" disabled>
+          <div className="flex items-center space-x-1">
+            <button className="p-1.5 rounded border border-slate-200 text-slate-400 hover:bg-slate-50 disabled:opacity-50" disabled>
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <button className="w-8 h-8 rounded border border-blue-600 bg-blue-50 text-blue-700 font-semibold text-sm">1</button>
-            <button className="w-8 h-8 rounded border border-transparent hover:bg-slate-100 text-slate-600 font-medium text-sm transition-colors">2</button>
-            <button className="w-8 h-8 rounded border border-transparent hover:bg-slate-100 text-slate-600 font-medium text-sm transition-colors">3</button>
-            <span className="px-2 text-slate-400">...</span>
-            <button className="p-2 rounded border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+            <button className="w-7 h-7 rounded border border-blue-600 bg-blue-50 text-blue-700 font-bold text-xs transition-colors">1</button>
+            <button className="w-7 h-7 rounded border border-transparent hover:bg-slate-100 text-slate-500 font-semibold text-xs transition-colors">2</button>
+            <button className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>

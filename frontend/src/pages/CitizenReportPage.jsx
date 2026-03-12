@@ -201,9 +201,9 @@ export default function CitizenReportPage() {
 
   return (
     <div className="flex-grow pt-20 px-4 pb-12 w-full max-w-lg mx-auto md:max-w-2xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Report a Civic Issue</h1>
-        <p className="text-slate-600">Help us improve your city by reporting infrastructure problems.</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Report a Civic Issue</h1>
+        <p className="text-sm sm:text-base text-slate-600 font-medium">Help us improve your city by reporting infrastructure problems.</p>
       </div>
 
       <AnimatePresence mode="wait">
@@ -211,35 +211,35 @@ export default function CitizenReportPage() {
           <motion.div 
             key="success"
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-            className="bg-green-50 border border-green-200 rounded-2xl p-8 text-center shadow-sm"
+            className="bg-green-50 border border-green-200 rounded-3xl p-6 sm:p-10 text-center shadow-lg animate-in fade-in zoom-in"
           >
-            <div className="mx-auto flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+            <div className="mx-auto flex items-center justify-center w-16 h-16 bg-green-100 rounded-2xl mb-6">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">Issue Reported!</h2>
-            <p className="text-slate-600 mb-6">Your report has been successfully submitted to the municipal authorities. Tracking ID: <span className="font-semibold text-slate-800">#UP-2024-1089</span></p>
+            <h2 className="text-2xl font-bold text-slate-800 mb-3">Report Submitted!</h2>
+            <p className="text-slate-600 mb-8 max-w-sm mx-auto leading-relaxed">Your report has been received. Municipal authorities will review and assign a crew shortly.</p>
             <button 
-              onClick={() => { setSubmitted(false); setFormData({ issueType: '', description: '', location: '', latitude: null, longitude: null, photos: [] }); }}
-              className="bg-green-600 text-white font-medium py-2.5 px-6 rounded-xl hover:bg-green-700 transition"
+              onClick={() => { setSubmitted(false); setFormData({ issueType: '', description: '', location: '', ward: '', latitude: null, longitude: null, photos: [] }); }}
+              className="w-full sm:w-auto bg-green-600 text-white font-bold py-3.5 px-8 rounded-2xl hover:bg-green-700 transition-all shadow-md active:scale-95"
             >
-              Report Another Issue
+              File Another Report
             </button>
           </motion.div>
         ) : (
           <motion.div 
             key="form"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-            className="bg-white shadow-xl border border-slate-100 rounded-3xl p-6 sm:p-8"
+            className="bg-white shadow-2xl border border-slate-100 rounded-3xl p-5 sm:p-10"
           >
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
               
               {/* Issue Type */}
               <div>
-                <label className="block text-sm font-semibold text-slate-800 mb-2">
-                  Issue Type
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
+                  Incident Category
                   {aiDetectedType && (
-                    <span className="ml-2 inline-flex items-center gap-1 text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-200">
-                      🤖 AI Detected: {aiDetectedType}
+                    <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-bold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full border border-blue-200 animate-pulse">
+                      🤖 AI Suggested: {aiDetectedType}
                     </span>
                   )}
                 </label>
@@ -248,8 +248,8 @@ export default function CitizenReportPage() {
                     <div 
                       key={type}
                       onClick={() => setFormData({ ...formData, issueType: type })}
-                      className={`cursor-pointer px-4 py-3 rounded-xl border-2 transition-all flex items-center justify-center text-sm font-medium
-                        ${formData.issueType === type ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-200 hover:border-blue-300 text-slate-600'}
+                      className={`cursor-pointer px-4 py-3.5 rounded-2xl border-2 transition-all flex items-center justify-center text-sm font-bold
+                        ${formData.issueType === type ? 'border-blue-600 bg-blue-100 text-blue-800 shadow-md' : 'border-slate-100 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:border-slate-300'}
                       `}
                     >
                       {type}
@@ -258,104 +258,109 @@ export default function CitizenReportPage() {
                 </div>
               </div>
 
-              {/* Ward Selection */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-800 mb-2">Select Your Ward</label>
-                <select
-                  required
-                  value={formData.ward}
-                  onChange={(e) => setFormData(prev => ({ ...prev, ward: e.target.value }))}
-                  className="block w-full px-4 py-3 border border-slate-300 rounded-xl leading-5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm shadow-sm"
-                >
-                  <option value="">-- Select Ward --</option>
-                  {Array.from({ length: 24 }, (_, i) => (
-                    <option key={i + 1} value={`Ward ${i + 1}`}>Ward {i + 1}</option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                 {/* Ward Selection */}
+                 <div>
+                   <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Select Ward</label>
+                   <select
+                     required
+                     value={formData.ward}
+                     onChange={(e) => setFormData(prev => ({ ...prev, ward: e.target.value }))}
+                     className="block w-full px-4 py-3.5 border border-slate-200 rounded-2xl bg-slate-50 text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm outline-none"
+                   >
+                     <option value="">Choose Ward...</option>
+                     {Array.from({ length: 24 }, (_, i) => (
+                       <option key={i + 1} value={`Ward ${i + 1}`}>Ward {i + 1}</option>
+                     ))}
+                   </select>
+                 </div>
+
+                 {/* GPS Dropdown fallback */}
+                 <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Auto-Locate</label>
+                    <button 
+                      type="button"
+                      onClick={handleGpsDetect}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3.5 border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl transition-all text-sm font-bold"
+                    >
+                      {gpsLoading ? (
+                         <div className="w-4 h-4 border-2 border-slate-400 border-t-slate-600 rounded-full animate-spin"></div>
+                      ) : <Navigation className="w-4 h-4 text-blue-600" />}
+                      <span>{gpsLoading ? 'Locating...' : 'Use Precise GPS'}</span>
+                    </button>
+                 </div>
               </div>
 
               {/* Photo Upload */}
               <div>
-                <label className="block text-sm font-semibold text-slate-800 mb-2">Upload Photos (Max 2)</label>
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
-                  <div className="space-y-1 text-center">
-                    <UploadCloud className="mx-auto h-12 w-12 text-slate-400" />
-                    <div className="flex text-sm text-slate-600 justify-center">
-                      <label htmlFor="file-upload" className="relative cursor-pointer bg-transparent rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                        <span>Upload files</span>
-                        <input id="file-upload" name="file-upload" type="file" multiple className="sr-only" onChange={handlePhotoUpload} accept="image/*" />
-                      </label>
-                      <p className="pl-1">or drag and drop</p>
-                    </div>
-                    <p className="text-xs text-slate-500">PNG, JPG up to 10MB (max 2 images)</p>
-                  </div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Visual Evidence (Required)</label>
+                <div 
+                  onClick={() => document.getElementById('file-upload').click()}
+                  className="relative px-6 py-10 border-2 border-slate-200 border-dashed rounded-3xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition-all text-center group"
+                >
+                  <input id="file-upload" type="file" multiple className="sr-only" onChange={handlePhotoUpload} accept="image/*" />
+                  <UploadCloud className="mx-auto h-12 w-12 text-slate-300 group-hover:text-blue-500 transition-colors mb-4" />
+                  <p className="text-sm font-bold text-slate-600">Click to upload or drag files</p>
+                  <p className="text-xs text-slate-400 mt-1">High resolution JPG/PNG (Up to 2 images)</p>
                 </div>
                 {formData.photos && formData.photos.length > 0 && (
-                  <div className="mt-2 flex flex-col gap-1">
+                  <div className="mt-4 flex flex-wrap gap-2">
                     {formData.photos.map((p, idx) => (
-                      <p key={idx} className="text-sm text-blue-600 font-medium">Selected: {p.name}</p>
+                      <div key={idx} className="bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-700 flex items-center gap-2">
+                        <CheckCircle className="w-3.5 h-3.5" /> {p.name}
+                      </div>
                     ))}
                   </div>
                 )}
-                {isClassifying && <p className="text-sm text-amber-600 font-medium mt-1 animate-pulse">Analyzing first image with AI...</p>}
+                {isClassifying && (
+                  <div className="mt-3 flex items-center gap-2 text-xs font-bold text-amber-600 animate-pulse bg-amber-50 p-2 rounded-lg border border-amber-100">
+                     <Activity className="w-3.5 h-3.5" /> Initializing AI Computer Vision Analysis...
+                  </div>
+                )}
               </div>
 
-              {/* Location */}
+              {/* Location Input */}
               <div>
-                <label className="block text-sm font-semibold text-slate-800 mb-2">Location details</label>
-                <div className="flex gap-2">
-                  <div className="relative flex-grow">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <MapPin className="h-5 w-5 text-slate-400" />
-                    </div>
+                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Location Description</label>
+                 <div className="relative">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input 
                       type="text" 
                       required
                       value={formData.location}
                       onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                      className="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm shadow-sm" 
-                      placeholder="Enter street name or landmark"
+                      className="w-full pl-12 pr-4 py-4 border border-slate-200 rounded-2xl bg-slate-50 text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm outline-none" 
+                      placeholder="e.g. Near Star Cineplex, MG Road"
                     />
-                  </div>
-                  <button 
-                    type="button"
-                    onClick={handleGpsDetect}
-                    className="flex-shrink-0 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium p-3 rounded-xl border border-slate-300 transition-colors shadow-sm flex items-center justify-center"
-                    title="Auto-detect GPS"
-                  >
-                    {gpsLoading ? (
-                       <svg className="animate-spin h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                       </svg>
-                    ) : <Navigation className="w-5 h-5 text-blue-600" />}
-                  </button>
-                </div>
+                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-semibold text-slate-800 mb-2">Short Description</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Report Details</label>
                 <textarea 
                   required
-                  rows={3}
+                  rows={4}
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-slate-300 rounded-xl p-3" 
-                  placeholder="Provide additional details to help authorities locate and fix the issue." 
+                  className="w-full p-4 border border-slate-200 rounded-2xl bg-slate-50 text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm outline-none" 
+                  placeholder="Tell us more about the issue (e.g. size of pothole, duration of outage...)" 
                 />
               </div>
 
               {/* Submit Button */}
-              <div className="pt-2">
+              <div className="pt-4">
                 <button 
                   type="submit" 
                   disabled={isSubmitting || !formData.issueType}
-                  className={`w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white transition-colors
-                    ${isSubmitting || !formData.issueType ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 bg-[linear-gradient(110deg,#2563eb,45%,#3b82f6,55%,#2563eb)] bg-[length:200%_100%] animate-shimmer'}
-                  `}
+                  className="w-full flex justify-center items-center py-4 px-6 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-black text-sm uppercase tracking-widest transition-all shadow-xl hover:shadow-blue-200 active:scale-[0.98]"
                 >
-                  {isSubmitting ? 'Verifying & Submitting...' : 'Submit Complaint'}
+                  {isSubmitting ? (
+                    <span className="flex items-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                      Uploading Report...
+                    </span>
+                  ) : 'Confirm and Submit Report'}
                 </button>
               </div>
 
