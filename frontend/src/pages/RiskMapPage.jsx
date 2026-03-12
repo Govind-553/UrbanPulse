@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import L from 'leaflet';
-import { Layers, Droplet, CloudRain, AlertTriangle } from 'lucide-react';
+import { Layers, Droplet, CloudRain, AlertTriangle, Cloud, Thermometer, Activity } from 'lucide-react';
 
 // Custom icons based on risk
 const createCustomIcon = (color) => {
@@ -31,9 +31,54 @@ const icons = {
 export default function RiskMapPage() {
   const [showMonsoonLayer, setShowMonsoonLayer] = useState(false);
   const [filterType, setFilterType] = useState('All');
+  
+  // Weather & Risk State
+  const [weatherData, setWeatherData] = useState(null);
+  const [riskScore, setRiskScore] = useState(null);
+  const [isLoadingRisk, setIsLoadingRisk] = useState(true);
 
   // Mumbai Coordinates
   const center = [19.0760, 72.8777];
+
+  useEffect(() => {
+    const fetchCityRisk = async () => {
+      try {
+        setIsLoadingRisk(true);
+        // 1. Fetch Weather
+        const weatherRes = await fetch(`http://localhost:8000/ai/weather?lat=${center[0]}&lon=${center[1]}`);
+        const weatherDataObj = await weatherRes.json();
+        
+        const tempCelsius = weatherDataObj.weather_data?.main?.temp ? (weatherDataObj.weather_data.main.temp - 273.15).toFixed(1) : 28.5;
+        const condition = weatherDataObj.weather_data?.weather?.[0]?.description || 'Clear';
+        const rain1h = weatherDataObj.rainfall_last_hour;
+        
+        setWeatherData({ temp: tempCelsius, condition, rain: rain1h });
+
+        // 2. Fetch AI Risk Score based on weather + dummy city inputs
+        const riskInput = {
+          rainfall: rain1h || 0,
+          complaints: 150,     // dummy avg complaints
+          road_density: 0.85   // dummy density for demo
+        };
+
+        const riskRes = await fetch('http://localhost:8000/ai/risk-score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(riskInput)
+        });
+        
+        const riskData = await riskRes.json();
+        setRiskScore((riskData.risk_score * 100).toFixed(1)); // Convert to percentage
+        
+      } catch (error) {
+        console.error("Failed to load city risk", error);
+      } finally {
+        setIsLoadingRisk(false);
+      }
+    };
+
+    fetchCityRisk();
+  }, []);
 
   const dummyIssues = [
     { id: 1, pos: [19.040, 72.840], type: 'Pothole', status: 'safe', label: 'Fixed Pothole' },
@@ -55,19 +100,43 @@ export default function RiskMapPage() {
       <div className="bg-white px-6 py-4 shrink-0 border-b border-slate-200 shadow-sm z-10 flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Infrastructure Risk & Monsoon Map</h1>
-          <p className="text-sm text-slate-500 font-medium">Real-time data for smarter city management.</p>
+          <p className="text-sm text-slate-500 font-medium">Real-time AI-driven data for smarter city management.</p>
         </div>
         
-        {/* Toggle Monsoon Layer */}
-        <button 
-          onClick={() => setShowMonsoonLayer(!showMonsoonLayer)}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-            showMonsoonLayer ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-          }`}
-        >
-          <CloudRain className="w-5 h-5" />
-          <span>Monsoon Risk Layer</span>
-        </button>
+        <div className="flex items-center gap-4">
+          {/* Live AI Data Panel */}
+          {!isLoadingRisk && weatherData && riskScore && (
+             <div className="hidden md:flex bg-slate-50 border border-slate-200 rounded-lg p-2 gap-4 divide-x divide-slate-200">
+                <div className="flex items-center px-3">
+                   <Thermometer className="w-5 h-5 text-orange-500 mr-2" />
+                   <div>
+                     <p className="text-xs text-slate-500 font-semibold uppercase">Mumbai Weather</p>
+                     <p className="text-sm font-bold text-slate-800">{weatherData.temp}°C, {weatherData.condition}</p>
+                   </div>
+                </div>
+                <div className="flex items-center pl-4 pr-3">
+                   <Activity className={`w-5 h-5 mr-2 ${riskScore > 75 ? 'text-red-500' : riskScore > 40 ? 'text-yellow-500' : 'text-green-500'}`} />
+                   <div>
+                     <p className="text-xs text-slate-500 font-semibold uppercase">AI Risk Score</p>
+                     <p className={`text-sm font-bold ${riskScore > 75 ? 'text-red-600' : riskScore > 40 ? 'text-yellow-600' : 'text-green-600'}`}>
+                       {riskScore}%
+                     </p>
+                   </div>
+                </div>
+             </div>
+          )}
+
+          {/* Toggle Monsoon Layer */}
+          <button 
+            onClick={() => setShowMonsoonLayer(!showMonsoonLayer)}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors h-full ${
+              showMonsoonLayer ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            <CloudRain className="w-5 h-5" />
+            <span>Monsoon Risk Layer</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 relative flex">

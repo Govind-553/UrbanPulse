@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, 
   AreaChart, Area, PieChart, Pie, Cell, Legend
@@ -31,6 +31,29 @@ const wardComplaints = [
 ];
 
 export default function DashboardPage() {
+  const [riskScore, setRiskScore] = useState(null);
+
+  useEffect(() => {
+    // Fetch live risk score for the dashboard
+    const fetchRisk = async () => {
+      try {
+        const riskInput = { rainfall: 0, complaints: 12450, road_density: 0.85 }; // Using dummy totals
+        const riskRes = await fetch('http://localhost:8000/ai/risk-score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(riskInput)
+        });
+        if(riskRes.ok) {
+          const riskData = await riskRes.json();
+          setRiskScore((riskData.risk_score * 100).toFixed(1));
+        }
+      } catch (error) {
+        console.error("Dashboard risk fetch failed", error);
+      }
+    };
+    fetchRisk();
+  }, []);
+
   return (
     <div className="flex-1 bg-slate-50 min-h-screen pt-20 px-4 sm:px-6 lg:px-8 pb-12 w-full max-w-7xl mx-auto">
       
@@ -72,9 +95,9 @@ export default function DashboardPage() {
             <AlertTriangle className="w-6 h-6 text-red-600" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">High-Risk Zones</p>
-            <h3 className="text-2xl font-bold text-slate-900">34</h3>
-            <p className="text-xs text-red-600 font-medium mt-1">Requires immediate attention</p>
+            <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">City Risk Index (AI)</p>
+            <h3 className="text-2xl font-bold text-slate-900">{riskScore ? `${riskScore}%` : 'Loading...'}</h3>
+            <p className="text-xs text-red-600 font-medium mt-1">Based on weather & issues</p>
           </div>
         </div>
 

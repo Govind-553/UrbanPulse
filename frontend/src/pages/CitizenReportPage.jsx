@@ -14,6 +14,7 @@ export default function CitizenReportPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
+  const [isClassifying, setIsClassifying] = useState(false);
 
   const issueTypes = [
     "Pothole",
@@ -72,6 +73,61 @@ export default function CitizenReportPage() {
         setFormData({ issueType: '', description: '', location: '', photo: null });
       }, 5000);
     }, 2000);
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setFormData(prev => ({ ...prev, photo: file }));
+    setIsClassifying(true);
+
+    try {
+      const aiFormData = new FormData();
+      aiFormData.append("file", file);
+
+      const response = await fetch("http://localhost:8000/ai/classify", {
+        method: "POST",
+        body: aiFormData
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data && Array.isArray(data) && data.length > 0) {
+          const topLabel = data[0].label?.toLowerCase() || "";
+          
+          let detectedType = '';
+          if (topLabel.includes('pothole') || topLabel.includes('road')) {
+            detectedType = 'Pothole';
+
+            // Also trigger pothole detection silently in background to show system integration
+            try {
+              fetch("http://localhost:8000/ai/detect-pothole", {
+                method: "POST",
+                body: aiFormData
+              }).then(res => res.json())
+                .then(data => console.log("Roboflow Detection Result:", data))
+                .catch(err => console.error("Detection trace failed", err));
+            } catch (e) {
+              console.error(e);
+            }
+
+          }
+          else if (topLabel.includes('water') || topLabel.includes('flood')) detectedType = 'Waterlogging';
+          else if (topLabel.includes('drain') || topLabel.includes('sewer')) detectedType = 'Drainage Blockage';
+          else if (topLabel.includes('light') || topLabel.includes('lamp') || topLabel.includes('street')) detectedType = 'Broken Streetlight';
+          else if (topLabel.includes('garbage') || topLabel.includes('trash') || topLabel.includes('waste')) detectedType = 'Garbage Overflow';
+          
+          if (detectedType) {
+            setFormData(prev => ({ ...prev, issueType: detectedType }));
+          }
+        }
+      }
+    } catch (error) {
+      console.error("AI Classification failed", error);
+    } finally {
+      setIsClassifying(false);
+    }
   };
 
   return (
@@ -135,7 +191,7 @@ export default function CitizenReportPage() {
                     <div className="flex text-sm text-slate-600 justify-center">
                       <label htmlFor="file-upload" className="relative cursor-pointer bg-transparent rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                         <span>Upload a file</span>
-                        <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={(e) => setFormData({ ...formData, photo: e.target.files[0] })} />
+                        <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={handlePhotoUpload} />
                       </label>
                       <p className="pl-1">or drag and drop</p>
                     </div>
@@ -143,6 +199,7 @@ export default function CitizenReportPage() {
                   </div>
                 </div>
                 {formData.photo && <p className="text-sm text-blue-600 font-medium mt-2">Selected: {formData.photo.name}</p>}
+                {isClassifying && <p className="text-sm text-amber-600 font-medium mt-1 animate-pulse">Analyzing image with AI to detect issue...</p>}
               </div>
 
               {/* Location */}
