@@ -53,7 +53,7 @@ export default function WardManagementPage() {
       
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Ward Management Panel: Ward 12 - Koramangala</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Ward Management Panel</h1>
         <p className="text-sm text-slate-500 font-medium mt-1">Manage and assign tasks for reported civic issues.</p>
       </div>
 
@@ -115,13 +115,19 @@ export default function WardManagementPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {row.images && row.images.length > 0 ? (
-                        <div className="flex gap-1">
-                          {row.images.map((img, idx) => (
-                            <img key={idx} src={`http://localhost:5000/${img.replace(/\\/g, '/')}`} alt={`${row.category} ${idx + 1}`} className="h-12 w-16 object-cover rounded border border-slate-200 shadow-sm" />
+                        <div className="flex gap-1 flex-wrap">
+                          {row.images.slice(0, 2).map((img, idx) => (
+                            <img
+                              key={idx}
+                              src={`http://localhost:5000/${img.replace(/\\/g, '/')}`}
+                              alt={`Photo ${idx + 1}`}
+                              className="h-14 w-20 object-cover rounded-md border border-slate-200 shadow-sm bg-slate-100"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
                           ))}
                         </div>
                       ) : (
-                        <div className="h-12 w-20 bg-slate-200 rounded flex items-center justify-center text-xs text-slate-500">No Image</div>
+                        <div className="h-14 w-20 bg-slate-200 rounded-md flex items-center justify-center text-xs text-slate-500">No Image</div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
