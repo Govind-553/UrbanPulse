@@ -76,13 +76,13 @@ export default function CitizenReportPage() {
         const data = await response.json();
         
         if (data && data.display_name) {
-          setFormData({ ...formData, location: data.display_name, latitude, longitude });
+          setFormData(prev => ({ ...prev, location: data.display_name, latitude, longitude }));
         } else {
-          setFormData({ ...formData, location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`, latitude, longitude });
+          setFormData(prev => ({ ...prev, location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`, latitude, longitude }));
         }
       } catch (err) {
         console.error("Reverse geocoding failed", err);
-        setFormData({ ...formData, location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`, latitude, longitude });
+        setFormData(prev => ({ ...prev, location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`, latitude, longitude }));
       }
     }
     
@@ -264,7 +264,7 @@ export default function CitizenReportPage() {
                 <select
                   required
                   value={formData.ward}
-                  onChange={(e) => setFormData({ ...formData, ward: e.target.value })}
+                  onChange={(e) => setFormData(prev => ({ ...prev, ward: e.target.value }))}
                   className="block w-full px-4 py-3 border border-slate-300 rounded-xl leading-5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm shadow-sm"
                 >
                   <option value="">-- Select Ward --</option>
@@ -312,7 +312,7 @@ export default function CitizenReportPage() {
                       type="text" 
                       required
                       value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
                       className="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm shadow-sm" 
                       placeholder="Enter street name or landmark"
                     />
@@ -340,7 +340,7 @@ export default function CitizenReportPage() {
                   required
                   rows={3}
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-slate-300 rounded-xl p-3" 
                   placeholder="Provide additional details to help authorities locate and fix the issue." 
                 />
