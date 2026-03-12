@@ -222,9 +222,23 @@ export default function RiskMapPage() {
               return (
                 <Marker key={issue._id} position={[issue.latitude, issue.longitude]} icon={icons[colorStatus]}>
                   <Popup>
-                    <div className="font-sans">
+                    <div className="font-sans w-48">
                       <p className="font-bold text-slate-800 text-sm mb-1">{issueTypeLabel}</p>
                       <p className="text-xs text-slate-600 mb-2">{issue.title}</p>
+                      
+                      {issue.images && issue.images.length > 0 && (
+                        <div className={`mb-2 gap-1 grid ${issue.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                          {issue.images.map((img, idx) => (
+                            <img 
+                              key={idx}
+                              src={`http://localhost:5000/${img}`} 
+                              alt={`${issueTypeLabel} ${idx + 1}`} 
+                              className="w-full h-24 object-cover rounded border border-slate-200 shadow-sm"
+                            />
+                          ))}
+                        </div>
+                      )}
+
                       <div className="flex flex-col gap-1 mb-2">
                         <span className="text-[10px] text-slate-500 font-mono bg-slate-100 rounded px-1 w-max">
                           {issue.latitude.toFixed(6)}, {issue.longitude.toFixed(6)}

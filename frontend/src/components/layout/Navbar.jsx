@@ -29,6 +29,7 @@ export default function Navbar() {
             <Link to="/" className="text-white hover:text-brand-light border-b-2 border-brand-light pb-1">Home</Link>
             <Link to="/report" className="text-slate-300 hover:text-white transition-colors">Report Issue</Link>
             <Link to="/map" className="text-slate-300 hover:text-white transition-colors">Risk Map</Link>
+            <Link to="/completed-projects" className="text-slate-300 hover:text-white transition-colors">Completed Projects</Link>
             {(!isAuthenticated || user?.role === 'authority') && (
               <Link to="/dashboard" className="text-slate-300 hover:text-white transition-colors">Municipal Dashboard</Link>
             )}

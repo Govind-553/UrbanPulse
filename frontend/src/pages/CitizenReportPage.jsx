@@ -11,7 +11,7 @@ export default function CitizenReportPage() {
     location: '',
     latitude: null,
     longitude: null,
-    photo: null,
+    photos: [],
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,9 +32,10 @@ export default function CitizenReportPage() {
     let coords = null;
 
     try {
-      // 1. Try to get EXIF data first if photo exists
-      if (formData.photo) {
-        const gpsData = await exifr.gps(formData.photo);
+      // 1. Try to get EXIF data first if photos exist
+      if (formData.photos && formData.photos.length > 0) {
+        // Try the first photo for GPS data
+        const gpsData = await exifr.gps(formData.photos[0]);
         if (gpsData && gpsData.latitude && gpsData.longitude) {
           coords = { latitude: gpsData.latitude, longitude: gpsData.longitude };
         }
@@ -112,8 +113,10 @@ export default function CitizenReportPage() {
       submitData.append('latitude', finalLat);
       submitData.append('longitude', finalLng);
 
-      if (formData.photo) {
-        submitData.append('images', formData.photo);
+      if (formData.photos && formData.photos.length > 0) {
+        formData.photos.forEach(photo => {
+          submitData.append('images', photo);
+        });
       }
 
       await reportService.submitReport(submitData);
@@ -123,7 +126,7 @@ export default function CitizenReportPage() {
       
       setTimeout(() => {
         setSubmitted(false);
-        setFormData({ issueType: '', description: '', location: '', latitude: null, longitude: null, photo: null });
+        setFormData({ issueType: '', description: '', location: '', latitude: null, longitude: null, photos: [] });
       }, 5000);
     } catch (err) {
       console.error(err);
@@ -133,15 +136,18 @@ export default function CitizenReportPage() {
   };
 
   const handlePhotoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files || files.length === 0) return;
+    
+    // Only keep up to 2 photos
+    const selectedFiles = files.slice(0, 2);
 
-    setFormData(prev => ({ ...prev, photo: file }));
+    setFormData(prev => ({ ...prev, photos: selectedFiles }));
     setIsClassifying(true);
 
     try {
       const aiFormData = new FormData();
-      aiFormData.append("file", file);
+      aiFormData.append("file", selectedFiles[0]); // Send first image for AI classification
 
       const response = await fetch("http://localhost:8000/ai/classify", {
         method: "POST",
@@ -207,7 +213,7 @@ export default function CitizenReportPage() {
             <h2 className="text-2xl font-bold text-slate-800 mb-2">Issue Reported!</h2>
             <p className="text-slate-600 mb-6">Your report has been successfully submitted to the municipal authorities. Tracking ID: <span className="font-semibold text-slate-800">#UP-2024-1089</span></p>
             <button 
-              onClick={() => { setSubmitted(false); setFormData({ issueType: '', description: '', location: '', latitude: null, longitude: null, photo: null }); }}
+              onClick={() => { setSubmitted(false); setFormData({ issueType: '', description: '', location: '', latitude: null, longitude: null, photos: [] }); }}
               className="bg-green-600 text-white font-medium py-2.5 px-6 rounded-xl hover:bg-green-700 transition"
             >
               Report Another Issue
@@ -241,22 +247,28 @@ export default function CitizenReportPage() {
 
               {/* Photo Upload */}
               <div>
-                <label className="block text-sm font-semibold text-slate-800 mb-2">Upload Photo (Proof)</label>
+                <label className="block text-sm font-semibold text-slate-800 mb-2">Upload Photos (Max 2)</label>
                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
                   <div className="space-y-1 text-center">
                     <UploadCloud className="mx-auto h-12 w-12 text-slate-400" />
                     <div className="flex text-sm text-slate-600 justify-center">
                       <label htmlFor="file-upload" className="relative cursor-pointer bg-transparent rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                        <span>Upload a file</span>
-                        <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={handlePhotoUpload} />
+                        <span>Upload files</span>
+                        <input id="file-upload" name="file-upload" type="file" multiple className="sr-only" onChange={handlePhotoUpload} accept="image/*" />
                       </label>
                       <p className="pl-1">or drag and drop</p>
                     </div>
-                    <p className="text-xs text-slate-500">PNG, JPG, GIF up to 10MB</p>
+                    <p className="text-xs text-slate-500">PNG, JPG up to 10MB (max 2 images)</p>
                   </div>
                 </div>
-                {formData.photo && <p className="text-sm text-blue-600 font-medium mt-2">Selected: {formData.photo.name}</p>}
-                {isClassifying && <p className="text-sm text-amber-600 font-medium mt-1 animate-pulse">Analyzing image with AI to detect issue...</p>}
+                {formData.photos && formData.photos.length > 0 && (
+                  <div className="mt-2 flex flex-col gap-1">
+                    {formData.photos.map((p, idx) => (
+                      <p key={idx} className="text-sm text-blue-600 font-medium">Selected: {p.name}</p>
+                    ))}
+                  </div>
+                )}
+                {isClassifying && <p className="text-sm text-amber-600 font-medium mt-1 animate-pulse">Analyzing first image with AI...</p>}
               </div>
 
               {/* Location */}

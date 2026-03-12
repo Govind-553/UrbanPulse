@@ -103,7 +103,11 @@ export default function WardManagementPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {row.images && row.images.length > 0 ? (
-                        <img src={`http://localhost:5000/${row.images[0]}`} alt={row.category} className="h-12 w-20 object-cover rounded border border-slate-200 shadow-sm" />
+                        <div className="flex gap-1">
+                          {row.images.map((img, idx) => (
+                            <img key={idx} src={`http://localhost:5000/${img}`} alt={`${row.category} ${idx + 1}`} className="h-12 w-16 object-cover rounded border border-slate-200 shadow-sm" />
+                          ))}
+                        </div>
                       ) : (
                         <div className="h-12 w-20 bg-slate-200 rounded flex items-center justify-center text-xs text-slate-500">No Image</div>
                       )}

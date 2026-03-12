@@ -10,10 +10,16 @@ const apiClient = axios.create({
   }
 });
 
-// Interceptor to add auth token
+// Interceptor to add auth token or municipal password
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('up_token');
+    const municipalPass = localStorage.getItem('municipal_pass');
+    
+    if (municipalPass) {
+      config.headers['x-municipal-pass'] = municipalPass;
+    }
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

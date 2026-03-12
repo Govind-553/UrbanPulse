@@ -3,12 +3,14 @@ import Navbar from './components/layout/Navbar';
 import LandingPage from './pages/LandingPage';
 import CitizenReportPage from './pages/CitizenReportPage';
 import RiskMapPage from './pages/RiskMapPage';
+import CompletedProjectsMapPage from './pages/CompletedProjectsMapPage';
 import DashboardPage from './pages/DashboardPage';
 import WardManagementPage from './pages/WardManagementPage';
 import IssueDetailsPage from './pages/IssueDetailsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+import MunicipalRoute from './components/layout/MunicipalRoute';
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
@@ -33,22 +35,27 @@ function App() {
                 <RiskMapPage />
               </ProtectedRoute>
             } />
-            
-            {/* Protected for ONLY authorities */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute allowedRoles={['authority']}>
-                <DashboardPage />
+            <Route path="/completed-projects" element={
+              <ProtectedRoute>
+                <CompletedProjectsMapPage />
               </ProtectedRoute>
+            } />
+            
+            {/* Protected by simple password for demo */}
+            <Route path="/dashboard" element={
+              <MunicipalRoute>
+                <DashboardPage />
+              </MunicipalRoute>
             } />
             <Route path="/ward-management" element={
-              <ProtectedRoute allowedRoles={['authority']}>
+              <MunicipalRoute>
                 <WardManagementPage />
-              </ProtectedRoute>
+              </MunicipalRoute>
             } />
             <Route path="/issue/:id" element={
-              <ProtectedRoute allowedRoles={['authority']}>
+              <MunicipalRoute>
                 <IssueDetailsPage />
-              </ProtectedRoute>
+              </MunicipalRoute>
             } />
           </Routes>
         </div>
