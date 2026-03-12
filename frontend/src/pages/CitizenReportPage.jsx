@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Camera, MapPin, UploadCloud, CheckCircle, Navigation } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import exifr from 'exifr';
 
 export default function CitizenReportPage() {
   const [formData, setFormData] = useState({
@@ -22,13 +23,38 @@ export default function CitizenReportPage() {
     "Garbage Overflow"
   ];
 
-  const handleGpsDetect = () => {
+  const handleGpsDetect = async () => {
+    if (!formData.photo) {
+      alert("Please upload a photo first to extract its location.");
+      return;
+    }
+    
     setGpsLoading(true);
-    // Mock GPS detection
-    setTimeout(() => {
-      setFormData({ ...formData, location: "M.G. Road, Bengaluru (Detected)" });
+    try {
+      // Parse EXIF data from the uploaded photo
+      const gpsData = await exifr.gps(formData.photo);
+      
+      if (gpsData && gpsData.latitude && gpsData.longitude) {
+        const { latitude, longitude } = gpsData;
+        
+        // Reverse geocoding using Nominatim
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        const data = await response.json();
+        
+        if (data && data.display_name) {
+          setFormData({ ...formData, location: data.display_name });
+        } else {
+          setFormData({ ...formData, location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` });
+        }
+      } else {
+        alert("Could not find GPS data in the uploaded image. Please ensure location services were enabled when the photo was taken.");
+      }
+    } catch (error) {
+      console.error("Error extracting EXIF data:", error);
+      alert("Error reading image data. Please ensure it is a valid image file.");
+    } finally {
       setGpsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -100,6 +126,25 @@ export default function CitizenReportPage() {
                 </div>
               </div>
 
+              {/* Photo Upload */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-800 mb-2">Upload Photo (Proof)</label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
+                  <div className="space-y-1 text-center">
+                    <UploadCloud className="mx-auto h-12 w-12 text-slate-400" />
+                    <div className="flex text-sm text-slate-600 justify-center">
+                      <label htmlFor="file-upload" className="relative cursor-pointer bg-transparent rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                        <span>Upload a file</span>
+                        <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={(e) => setFormData({ ...formData, photo: e.target.files[0] })} />
+                      </label>
+                      <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-xs text-slate-500">PNG, JPG, GIF up to 10MB</p>
+                  </div>
+                </div>
+                {formData.photo && <p className="text-sm text-blue-600 font-medium mt-2">Selected: {formData.photo.name}</p>}
+              </div>
+
               {/* Location */}
               <div>
                 <label className="block text-sm font-semibold text-slate-800 mb-2">Location details</label>
@@ -131,25 +176,6 @@ export default function CitizenReportPage() {
                     ) : <Navigation className="w-5 h-5 text-blue-600" />}
                   </button>
                 </div>
-              </div>
-
-              {/* Photo Upload */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-800 mb-2">Upload Photo (Proof)</label>
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
-                  <div className="space-y-1 text-center">
-                    <UploadCloud className="mx-auto h-12 w-12 text-slate-400" />
-                    <div className="flex text-sm text-slate-600 justify-center">
-                      <label htmlFor="file-upload" className="relative cursor-pointer bg-transparent rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                        <span>Upload a file</span>
-                        <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={(e) => setFormData({ ...formData, photo: e.target.files[0] })} />
-                      </label>
-                      <p className="pl-1">or drag and drop</p>
-                    </div>
-                    <p className="text-xs text-slate-500">PNG, JPG, GIF up to 10MB</p>
-                  </div>
-                </div>
-                {formData.photo && <p className="text-sm text-blue-600 font-medium mt-2">Selected: {formData.photo.name}</p>}
               </div>
 
               {/* Description */}
