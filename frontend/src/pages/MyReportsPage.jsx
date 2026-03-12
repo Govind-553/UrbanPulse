@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { reportService } from '../services/api';
-import { FileText, MapPin, Clock, AlertCircle, CheckCircle } from 'lucide-react';
+import { FileText, MapPin, Clock, AlertCircle, CheckCircle, Bell } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const statusStyles = {

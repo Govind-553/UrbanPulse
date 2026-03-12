@@ -1,4 +1,6 @@
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
@@ -12,6 +14,31 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 connectDB();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"]
+  }
+});
+
+// Attach io to app so we can use it in controllers
+app.set('io', io);
+
+// Handle Socket connections
+io.on('connection', (socket) => {
+  socket.on('join', (userId) => {
+    if (userId) {
+      socket.join(userId);
+      logger.info(`User ${userId} joined their personal socket room.`);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    // console.log('Client disconnected', socket.id);
+  });
+});
+
 
 // Middleware
 app.use(cors());
@@ -25,12 +52,13 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/issues', require('./routes/issueRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 // Global Error Handler
 app.use(require('./middlewares/errorHandler'));
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });

@@ -70,7 +70,22 @@ export const reportService = {
 
   // Update an issue (status etc.) — authority only
   updateIssue: async (id, data) => {
-    const response = await apiClient.put(`/issues/${id}`, data);
+    const isFormData = data instanceof FormData;
+    const response = await apiClient.put(`/issues/${id}`, data, {
+      headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : { 'Content-Type': 'application/json' }
+    });
     return response.data;
   }
 };
+
+export const notificationService = {
+  getNotifications: async () => {
+    const response = await apiClient.get('/notifications');
+    return response.data;
+  },
+  markAsRead: async (id) => {
+    const response = await apiClient.put(`/notifications/${id}/read`);
+    return response.data;
+  }
+};
+

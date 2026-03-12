@@ -11,6 +11,6 @@ router.route('/')
 
 router.route('/:id')
   .get(optionalAuth, getIssue)
-  .put(protect, authorize('authority'), updateIssue);
+  .put(protect, authorize('authority'), upload.array('images', 5), updateIssue);
 
 module.exports = router;

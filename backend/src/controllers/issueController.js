@@ -1,4 +1,5 @@
 const Issue = require('../models/Issue');
+const Notification = require('../models/Notification');
 const fs = require('fs');
 const path = require('path');
 
@@ -104,10 +105,32 @@ exports.updateIssue = async (req, res, next) => {
         // (Assuming authority's ward is set). We just allow it if no specific rules apply for cross-ward
     }
 
+    if (req.files && req.files.length > 0) {
+      const newImages = req.files.map(file => file.path.replace(/\\/g, '/'));
+      req.body.images = [...(issue.images || []), ...newImages];
+    }
+
     issue = await Issue.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
-    });
+    }).populate('reportedBy');
+
+    // Notification Logic
+    if (req.body.status) {
+      const message = `The status of your reported issue "${issue.title}" has been updated to ${req.body.status.replace('-', ' ')}.`;
+      
+      const notification = await Notification.create({
+        recipient: issue.reportedBy._id,
+        issue: issue._id,
+        message: message
+      });
+
+      // Emit socket event to the user's room
+      const io = req.app.get('io');
+      io.to(issue.reportedBy._id.toString()).emit('new_notification', {
+        notification: await notification.populate('issue', 'title category status')
+      });
+    }
 
     res.status(200).json({
       success: true,

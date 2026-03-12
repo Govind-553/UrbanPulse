@@ -29,6 +29,7 @@ export default function IssueDetailsPage() {
   const [error, setError] = useState(null);
   const [newStatus, setNewStatus] = useState('');
   const [notes, setNotes] = useState('');
+  const [imageFiles, setImageFiles] = useState([]);
   const [updating, setUpdating] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
 
@@ -54,12 +55,24 @@ export default function IssueDetailsPage() {
     e.preventDefault();
     setUpdating(true);
     try {
-      const res = await reportService.updateIssue(id, { status: newStatus, notes });
+      let payload;
+      if (imageFiles.length > 0 && (newStatus === 'in-progress' || newStatus === 'resolved')) {
+        payload = new FormData();
+        payload.append('status', newStatus);
+        payload.append('notes', notes);
+        imageFiles.forEach(file => payload.append('images', file));
+      } else {
+        payload = { status: newStatus, notes };
+      }
+      const res = await reportService.updateIssue(id, payload);
       if (res.success) {
         setIssue(res.data);
         setUpdateSuccess(true);
         setTimeout(() => setUpdateSuccess(false), 3000);
         setNotes('');
+        setImageFiles([]);
+        const fileInput = document.getElementById('status-image-upload');
+        if (fileInput) fileInput.value = '';
       }
     } catch (err) {
       alert('Failed to update the issue. Check your permissions.');
@@ -184,7 +197,7 @@ export default function IssueDetailsPage() {
                   <MapPin className="w-4 h-4 text-slate-400" /> Incident Location
                 </h3>
               </div>
-              <div className="h-[220px] w-full z-0">
+              <div className="h-[220px] w-full relative z-0">
                 <MapContainer center={issueLocation} zoom={15} style={{ height: "100%", width: "100%" }} zoomControl={false}>
                   <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
                   <Marker position={issueLocation}>
@@ -224,10 +237,27 @@ export default function IssueDetailsPage() {
                   rows="3" 
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 text-sm" 
+                  className="w-full bg-slate-900 border border-slate-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 text-sm mb-4" 
                   placeholder="Add crew updates, delays, or technical details..." 
                 />
               </div>
+
+              {(newStatus === 'in-progress' || newStatus === 'resolved') && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Upload Image (Proof/Progress)</label>
+                  <input
+                    id="status-image-upload"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => setImageFiles(Array.from(e.target.files))}
+                    className="w-full bg-slate-900 border border-slate-600 text-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 mb-2"
+                  />
+                  {imageFiles.length > 0 && (
+                    <p className="text-xs text-slate-400">{imageFiles.length} file(s) selected</p>
+                  )}
+                </div>
+              )}
 
               <div className="pt-1 flex flex-col gap-3">
                 <button 
