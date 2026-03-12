@@ -132,7 +132,7 @@ export default function IssueDetailsPage() {
             <div className="p-4 border-b border-slate-100">
                <h3 className="font-bold text-slate-800 text-sm">Incident Location</h3>
             </div>
-            <div className="h-48 w-full bg-slate-100 relative z-0">
+            <div className="h-[300px] w-full bg-slate-100 relative z-0">
                <MapContainer center={issueLocation} zoom={15} style={{ height: "100%", width: "100%" }} zoomControl={false}>
                   <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
                   <Marker position={issueLocation}>

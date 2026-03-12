@@ -3,11 +3,11 @@ import { Search, Filter, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-
 import { Link } from 'react-router-dom';
 
 const dummyData = [
-  { id: 'UP-001', type: 'Broken Streetlight', loc: '4th Cross Road', date: '18 Oct 2023, 09:30 AM', status: 'Pending', img: 'https://images.unsplash.com/photo-1542193574-1a22bdba473a?q=80&w=200&h=120&fit=crop' },
-  { id: 'UP-002', type: 'Garbage Overflow', loc: 'Park Entrance', date: '17 Oct 2023, 14:15 PM', status: 'Assigned', img: 'https://images.unsplash.com/photo-1530587191344-9dc86d750c18?q=80&w=200&h=120&fit=crop' },
-  { id: 'UP-003', type: 'Pothole on Main Road', loc: 'Near School', date: '16 Oct 2023, 10:00 AM', status: 'In Progress', img: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?q=80&w=200&h=120&fit=crop' },
-  { id: 'UP-004', type: 'Water Leakage', loc: 'Pipeline Junction', date: '15 Oct 2023, 08:45 AM', status: 'Resolved', img: 'https://images.unsplash.com/photo-1504608524841-42fe6f0a3ec6?q=80&w=200&h=120&fit=crop' },
-  { id: 'UP-005', type: 'Illegal Parking', loc: 'Market Area', date: '14 Oct 2023, 11:20 AM', status: 'Pending', img: 'https://images.unsplash.com/photo-1543888562-bb4436573752?q=80&w=200&h=120&fit=crop' },
+  { id: 'UP-001', type: 'Broken Streetlight', loc: '4th Cross Road', date: '18 Oct 2023, 09:30 AM', status: 'Pending', img: 'https://placehold.co/200x120/e2e8f0/475569?text=Streetlight' },
+  { id: 'UP-002', type: 'Garbage Overflow', loc: 'Park Entrance', date: '17 Oct 2023, 14:15 PM', status: 'Assigned', img: 'https://placehold.co/200x120/e2e8f0/475569?text=Garbage' },
+  { id: 'UP-003', type: 'Pothole on Main Road', loc: 'Near School', date: '16 Oct 2023, 10:00 AM', status: 'In Progress', img: 'https://placehold.co/200x120/e2e8f0/475569?text=Pothole' },
+  { id: 'UP-004', type: 'Water Leakage', loc: 'Pipeline Junction', date: '15 Oct 2023, 08:45 AM', status: 'Resolved', img: 'https://placehold.co/200x120/e2e8f0/475569?text=Water+Leak' },
+  { id: 'UP-005', type: 'Illegal Parking', loc: 'Market Area', date: '14 Oct 2023, 11:20 AM', status: 'Pending', img: 'https://placehold.co/200x120/e2e8f0/475569?text=Parking' },
 ];
 
 const statusStyles = {

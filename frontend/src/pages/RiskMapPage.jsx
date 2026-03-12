@@ -112,7 +112,7 @@ export default function RiskMapPage() {
         </div>
 
         {/* Map Container */}
-        <div className="w-full h-full z-[1]">
+        <div className="w-full h-[calc(100vh-64px)] z-[1]">
           <MapContainer center={center} zoom={13} style={{ height: "100%", width: "100%" }} zoomControl={false}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

@@ -2,8 +2,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Activity, AlertTriangle, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function LandingPage() {
+  const { isAuthenticated, role } = useAuth();
   const stats = [
     { icon: <Activity className="w-8 h-8 text-white" />, title: "Total Reports", value: "85,240+", desc: "Issues Registered This Month", color: "bg-brand-dark" },
     { icon: <ShieldCheck className="w-8 h-8 text-brand-light" />, title: "Resolved Issues", value: "72,105+", desc: "Efficiently Addressed", color: "bg-brand-dark" },
@@ -23,30 +25,53 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative bg-brand-dark text-white shadow-2xl overflow-hidden min-h-[500px] flex flex-col justify-center rounded-b-3xl mx-4 sm:mx-6 lg:mx-8 mt-4">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_90%,#C6F9F1_0%,#8EF6E4_40%,#0B1A30_60%,#0B1A30_100%)] opacity-80 mix-blend-overlay"></div>
-        <div className="relative z-10 px-8 py-16 md:py-24 max-w-3xl flex-grow flex flex-col justify-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-white"
-          >
-            UrbanPulse: Empowering Indian Cities. Shaping a Smarter Future.
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-slate-300 font-medium text-lg md:text-xl mb-10 max-w-lg leading-relaxed"
-          >
-            Connect with your municipal authorities, report civic issues, and monitor real-time city data for a better urban life.
-          </motion.p>
-          
+        <div className="relative z-10 px-8 py-16 md:py-24 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between w-full h-full min-h-[500px]">
+          <div className="max-w-3xl md:w-1/2 flex flex-col justify-center">
+            <motion.h1 
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
+              className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-white"
+            >
+              UrbanPulse: Empowering Indian Cities. Shaping a Smarter Future.
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-slate-300 font-medium text-lg md:text-xl mb-10 max-w-lg leading-relaxed"
+            >
+              Connect with your municipal authorities, report civic issues, and monitor real-time city data for a better urban life.
+            </motion.p>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex flex-wrap gap-4"
+            >
+              {isAuthenticated ? (
+                 role !== 'authority' && (
+                   <Link to="/report" className="flex items-center bg-brand-light text-brand-dark px-6 py-3 rounded-full font-semibold hover:bg-teal-300 transition-colors shadow-lg">
+                     Report Civic Issue <ArrowRight className="w-5 h-5 ml-2" />
+                   </Link>
+                 )
+              ) : (
+                 <Link to="/login" className="flex items-center bg-brand-light text-brand-dark px-6 py-3 rounded-full font-semibold hover:bg-teal-300 transition-colors shadow-lg">
+                   Get Started to Report <ArrowRight className="w-5 h-5 ml-2" />
+                 </Link>
+              )}
+              
+              <Link to={role === 'authority' ? "/dashboard" : "/map"} className="flex items-center bg-brand-dark border border-brand-light text-white px-6 py-3 rounded-full font-semibold hover:bg-brand-dark/80 transition-colors backdrop-blur-sm">
+                {role === 'authority' ? 'Go to Dashboard' : 'View City Map'}
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* Hero Image */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex flex-wrap gap-4"
+            initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.3 }}
+            className="hidden md:flex md:w-1/2 mt-12 md:mt-0 pl-0 lg:pl-10 items-center justify-center h-full"
           >
-            <Link to="/report" className="flex items-center bg-brand-light text-brand-dark px-6 py-3 rounded-full font-semibold hover:bg-teal-300 transition-colors shadow-lg">
-              Report Civic Issue <ArrowRight className="w-5 h-5 ml-2" />
-            </Link>
-            <Link to="/map" className="flex items-center bg-brand-dark border border-brand-light text-white px-6 py-3 rounded-full font-semibold hover:bg-brand-dark/80 transition-colors backdrop-blur-sm">
-              View City Dashboard
-            </Link>
+            <img 
+              src="/Hero-image.png" 
+              alt="UrbanPulse Dashboard Interface" 
+              className="w-full h-auto object-contain drop-shadow-2xl rounded-xl transform hover:scale-[1.02] transition-transform duration-500" 
+            />
           </motion.div>
         </div>
       </section>
@@ -101,16 +126,45 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-brand-dark text-slate-400 py-8 text-sm mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex gap-6">
-            <a href="#" className="hover:text-brand-light transition-colors">About Us</a>
-            <a href="#" className="hover:text-brand-light transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-brand-light transition-colors">Terms of Service</a>
+      <footer className="bg-brand-dark text-slate-400 py-16 text-sm mt-auto border-t border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-12">
+          {/* Column 1: Brand */}
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center space-x-2 text-white">
+               <div className="flex items-end space-x-[3px] h-5 text-brand-light">
+                 <div className="w-[4px] h-2 bg-brand-light/70 rounded-sm"></div>
+                 <div className="w-[4px] h-3.5 bg-brand-light/90 rounded-sm"></div>
+                 <div className="w-[4px] h-5 bg-brand-light rounded-sm"></div>
+               </div>
+               <span className="text-lg font-bold tracking-tight">UrbanPulse</span>
+            </div>
+            <p className="text-slate-500 leading-relaxed max-w-xs mt-2">
+              Empowering citizens and municipal authorities to collaborate seamlessly, building smarter, safer, and cleaner urban environments together.
+            </p>
           </div>
-          <div className="text-center text-xs">
-            © 2026 UrbanPulse. Empowering Indian Cities.
+
+          {/* Column 2: Quick Links */}
+          <div className="flex flex-col space-y-3 lg:mx-auto">
+            <h4 className="text-slate-200 font-bold uppercase tracking-wider text-xs mb-3">Quick Links</h4>
+            <Link to="/report" className="hover:text-brand-light transition-colors inline-block w-fit">Report an Issue</Link>
+            <Link to="/map" className="hover:text-brand-light transition-colors inline-block w-fit">City Risk Map</Link>
+            <Link to="/login" className="hover:text-brand-light transition-colors inline-block w-fit">Sign In</Link>
           </div>
+
+          {/* Column 3: Legal & Support */}
+          <div className="flex flex-col space-y-3 lg:ml-auto">
+            <h4 className="text-slate-200 font-bold uppercase tracking-wider text-xs mb-3">Support & Legal</h4>
+            <a href="#" className="hover:text-brand-light transition-colors inline-block w-fit">About Us</a>
+            <a href="#" className="hover:text-brand-light transition-colors inline-block w-fit">Privacy Policy</a>
+            <a href="#" className="hover:text-brand-light transition-colors inline-block w-fit">Terms of Service</a>
+            <a href="#" className="hover:text-brand-light transition-colors inline-block w-fit">Contact Support</a>
+          </div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 pt-8 border-t border-slate-800/60 flex flex-col md:flex-row items-center justify-between">
+          <p className="text-xs text-slate-500">
+            © 2026 UrbanPulse. All rights reserved. Designed for Indian Cities.
+          </p>
         </div>
       </footer>
     </div>
