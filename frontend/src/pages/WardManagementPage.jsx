@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { reportService } from '../services/api';
 
 const dummyData = [
   { id: 'UP-001', type: 'Broken Streetlight', loc: '4th Cross Road', date: '18 Oct 2023, 09:30 AM', status: 'Pending', img: 'https://placehold.co/200x120/e2e8f0/475569?text=Streetlight' },
@@ -18,6 +19,23 @@ const statusStyles = {
 };
 
 export default function WardManagementPage() {
+  const [issues, setIssues] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchIssues = async () => {
+      try {
+        const response = await reportService.getIssues();
+        setIssues(response.data || []);
+      } catch (error) {
+        console.error("Failed to fetch issues", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchIssues();
+  }, []);
+
   return (
     <div className="flex-1 bg-slate-50 min-h-screen pt-20 px-4 sm:px-6 lg:px-8 pb-12 w-full max-w-7xl mx-auto">
       
@@ -66,33 +84,47 @@ export default function WardManagementPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
-              {dummyData.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-50/80 transition-colors group">
-                  <td className="px-6 py-4">
-                    <Link to={`/issue/${row.id}`} className="block">
-                      <span className="text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors">{row.type}</span>
-                      <p className="text-xs text-slate-500 mt-1">{row.loc}</p>
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <img src={row.img} alt={row.type} className="h-12 w-20 object-cover rounded border border-slate-200 shadow-sm" />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                    {row.date}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${statusStyles[row.status]}`}>
-                      {row.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                       <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg shadow-sm transition-colors text-xs font-medium">Assign Task</button>
-                       <Link to={`/issue/${row.id}`} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg shadow-sm transition-colors text-xs font-medium">Update Status</Link>
-                    </div>
-                  </td>
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="px-6 py-4 text-center text-sm text-slate-500">Loading issues...</td>
                 </tr>
-              ))}
+              ) : issues.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="px-6 py-4 text-center text-sm text-slate-500">No issues found.</td>
+                </tr>
+              ) : (
+                issues.map((row) => (
+                  <tr key={row._id} className="hover:bg-slate-50/80 transition-colors group">
+                    <td className="px-6 py-4">
+                      <Link to={`/issue/${row._id}`} className="block">
+                        <span className="text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors">{row.title || row.category}</span>
+                        <p className="text-xs text-slate-500 mt-1">{row.ward}</p>
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {row.images && row.images.length > 0 ? (
+                        <img src={`http://localhost:5000/${row.images[0]}`} alt={row.category} className="h-12 w-20 object-cover rounded border border-slate-200 shadow-sm" />
+                      ) : (
+                        <div className="h-12 w-20 bg-slate-200 rounded flex items-center justify-center text-xs text-slate-500">No Image</div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                      {new Date(row.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${statusStyles[row.status] || 'bg-slate-100 text-slate-800'}`}>
+                        {row.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                         <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg shadow-sm transition-colors text-xs font-medium">Assign Task</button>
+                         <Link to={`/issue/${row._id}`} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg shadow-sm transition-colors text-xs font-medium">Update Status</Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
