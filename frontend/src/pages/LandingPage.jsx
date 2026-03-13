@@ -167,7 +167,7 @@ export default function LandingPage() {
       <footer className="bg-brand-dark text-slate-400 py-12 sm:py-16 text-sm mt-auto border-t border-slate-800 px-4">
         <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 sm:gap-12">
           {/* Column 1: Brand */}
-          <div className="flex flex-col space-y-4">
+          <div className="flex flex-col items-center sm:items-start space-y-4 text-center sm:text-left">
             <div className="flex items-center space-x-2 text-white">
                <div className="flex items-end space-x-[3px] h-5 text-brand-light">
                  <div className="w-[4px] h-2 bg-brand-light/70 rounded-sm"></div>
@@ -182,7 +182,7 @@ export default function LandingPage() {
           </div>
 
           {/* Column 2: Quick Links */}
-          <div className="flex flex-col space-y-2 sm:space-y-3">
+          <div className="flex flex-col items-center sm:items-start space-y-2 sm:space-y-3 text-center sm:text-left">
             <h4 className="text-slate-200 font-bold uppercase tracking-wider text-xs mb-2 sm:mb-3">Quick Links</h4>
             <Link to="/report" className="hover:text-brand-light transition-colors text-xs sm:text-sm">Report an Issue</Link>
             <Link to="/map" className="hover:text-brand-light transition-colors text-xs sm:text-sm">City Risk Map</Link>
@@ -190,8 +190,8 @@ export default function LandingPage() {
           </div>
 
           {/* Column 3: Legal & Support */}
-          <div className="flex flex-col space-y-2 sm:space-y-3">
-            <h4 className="text-slate-200 font-bold uppercase tracking-wider text-xs mb-2 sm:mb-3">Support & Legal</h4>
+          <div className="flex flex-col items-center sm:items-start space-y-2 sm:space-y-3 text-center sm:text-left">
+            <h4 className="text-slate-200 font-bold uppercase tracking-wider text-xs mb-2 sm:mb-3">Support &amp; Legal</h4>
             <a href="#" className="hover:text-brand-light transition-colors text-xs sm:text-sm">Privacy Policy</a>
             <a href="#" className="hover:text-brand-light transition-colors text-xs sm:text-sm">Terms of Service</a>
             <a href="#" className="hover:text-brand-light transition-colors text-xs sm:text-sm">Contact Support</a>
@@ -204,6 +204,7 @@ export default function LandingPage() {
           </p>
         </div>
       </footer>
+
     </div>
   );
 }

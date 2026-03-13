@@ -80,8 +80,9 @@ export default function RiskMapPage() {
     setIsLoadingWeather(true);
     setWeatherError(false);
     try {
+      const baseUrl = import.meta.env.VITE_AI_URL || 'http://localhost:8000';
       const res = await fetch(
-        `http://localhost:8000/ai/weather?lat=${MUMBAI_CENTER[0]}&lon=${MUMBAI_CENTER[1]}`
+        `${baseUrl}/ai/weather?lat=${MUMBAI_CENTER[0]}&lon=${MUMBAI_CENTER[1]}`
       );
       if (!res.ok) throw new Error('Weather API failed');
       const json = await res.json();
@@ -103,7 +104,7 @@ export default function RiskMapPage() {
       });
 
       // Compute AI risk score using real rainfall
-      const riskRes = await fetch('http://localhost:8000/ai/risk-score', {
+      const riskRes = await fetch(`${import.meta.env.VITE_AI_URL || 'http://localhost:8000'}/ai/risk-score`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -186,8 +187,8 @@ export default function RiskMapPage() {
       {/* ── Top Header Bar ── */}
       <div className="bg-white px-4 sm:px-6 py-3 shrink-0 border-b border-slate-200 shadow-sm z-20 flex flex-wrap justify-between items-center gap-3">
         <div className="min-w-0">
-          <h1 className="text-lg sm:text-xl font-bold text-slate-800 tracking-tight truncate">Infrastructure Risk & Monsoon Map</h1>
-          <p className="text-[10px] sm:text-xs text-slate-500 font-medium">Real-time AI weather + citizen flood reports · Mumbai</p>
+          <h1 className="text-[15px] sm:text-lg lg:text-xl font-bold text-slate-800 tracking-tight">Infrastructure Risk & Monsoon Map</h1>
+          <p className="text-[9px] sm:text-xs text-slate-500 font-medium whitespace-nowrap overflow-visible">Real-time AI weather + citizen flood reports · Mumbai</p>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3 ml-auto">
@@ -389,7 +390,7 @@ export default function RiskMapPage() {
                       {issue.images?.length > 0 && (
                         <div className={`mb-3 gap-1 grid ${issue.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                           {issue.images.map((img, idx) => (
-                            <img key={idx} src={`http://localhost:5000/${img.replace(/\\/g, '/')}`}
+                            <img key={idx} src={`${import.meta.env.VITE_IMG_BASE_URL || 'http://localhost:5000'}/${img.replace(/\\/g, '/')}`}
                               alt={`${label} ${idx + 1}`} className="w-full h-24 object-cover rounded-lg border border-slate-200 shadow-sm" />
                           ))}
                         </div>

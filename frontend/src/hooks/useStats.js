@@ -34,7 +34,14 @@ export function useStats() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/issues?public=true');
+      // Original baseUrl for issues API
+      const issuesApiBaseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+      // New baseUrl for AI service, if needed elsewhere (not directly used in this fetchStats for issues)
+      // const aiApiBaseUrl = import.meta.env.VITE_AI_URL || 'http://localhost:8000';
+      // Image base URL, if needed elsewhere (not directly used in this fetchStats for issues)
+      // const imageBaseUrl = import.meta.env.VITE_IMG_BASE_URL || 'http://localhost:5000';
+
+      const res = await fetch(`${issuesApiBaseUrl}/api/issues?public=true`);
       if (!res.ok) throw new Error('Failed to fetch issues');
       const json = await res.json();
       const issues = json.data || [];

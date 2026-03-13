@@ -3,8 +3,9 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, 
   AreaChart, Area, PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { FileText, CheckCircle, Clock, Brain, ShieldAlert } from 'lucide-react';
+import { FileText, CheckCircle, Clock, Brain, ShieldAlert, LogOut } from 'lucide-react';
 import { useStats } from '../hooks/useStats';
+import { useAuth } from '../context/AuthContext';
 
 const monthlyTrends = [
   { month: 'Jan', complaints: 120, resolved: 90 },
@@ -32,6 +33,7 @@ export default function DashboardPage() {
     totalReports, resolvedIssues, activeRisks, inProgress,
     resolutionRate, byCategory, byWard, loading: statsLoading, lastUpdated
   } = useStats();
+  const { logout } = useAuth();
 
   // Derive ward risk data from live byWard counts
   const wardRiskData = useMemo(() => {
@@ -100,6 +102,12 @@ export default function DashboardPage() {
           </div>
           <button className="bg-blue-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-blue-700 shadow-sm text-xs sm:text-sm flex items-center justify-center">
             <FileText className="w-4 h-4 mr-2" /> Export Report
+          </button>
+          <button 
+            onClick={logout}
+            className="bg-white border border-red-200 text-red-600 font-medium px-4 py-2 rounded-lg hover:bg-red-50 shadow-sm text-xs sm:text-sm flex items-center justify-center transition-colors"
+          >
+            <LogOut className="w-4 h-4 mr-2" /> Logout
           </button>
         </div>
       </div>

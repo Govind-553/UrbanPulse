@@ -137,7 +137,7 @@ export default function IssueDetailsPage() {
                   {issue.images.map((img, idx) => (
                     <img
                       key={idx}
-                      src={`http://localhost:5000/${img.replace(/\\/g, '/')}`}
+                      src={`${import.meta.env.VITE_IMG_BASE_URL || 'http://localhost:5000'}/${img.replace(/\\/g, '/')}`}
                       alt={`Issue photo ${idx + 1}`}
                       className="w-full h-56 sm:h-64 object-cover hover:opacity-95 transition-opacity cursor-pointer"
                       onError={(e) => { e.target.style.display = 'none'; }}

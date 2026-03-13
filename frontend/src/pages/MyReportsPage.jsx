@@ -72,7 +72,7 @@ export default function MyReportsPage() {
               {/* Image Section */}
               <div className="w-full md:w-64 h-48 md:h-auto shrink-0 bg-slate-100 flex items-center justify-center border-b md:border-b-0 md:border-r border-slate-200">
                 {issue.images && issue.images.length > 0 ? (
-                  <img src={`http://localhost:5000/${issue.images[0].replace(/\\/g, '/')}`} alt={issue.title} className="w-full h-full object-cover" />
+                  <img src={`${import.meta.env.VITE_IMG_BASE_URL || 'http://localhost:5000'}/${issue.images[0].replace(/\\/g, '/')}`} alt={issue.title} className="w-full h-full object-cover" />
                 ) : (
                   <div className="text-slate-400 flex flex-col items-center">
                     <FileText className="w-8 h-8 mb-2 opacity-50" />

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// The local development backend server
-const API_BASE_URL = 'http://localhost:5000/api';
+// Production or local development backend server
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

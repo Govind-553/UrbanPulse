@@ -1,26 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Search, Filter, ChevronLeft, ChevronRight, MoreVertical, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { reportService } from '../services/api';
 
-const dummyData = [
-  { id: 'UP-001', type: 'Broken Streetlight', loc: '4th Cross Road', date: '18 Oct 2023, 09:30 AM', status: 'Pending', img: 'https://placehold.co/200x120/e2e8f0/475569?text=Streetlight' },
-  { id: 'UP-002', type: 'Garbage Overflow', loc: 'Park Entrance', date: '17 Oct 2023, 14:15 PM', status: 'Assigned', img: 'https://placehold.co/200x120/e2e8f0/475569?text=Garbage' },
-  { id: 'UP-003', type: 'Pothole on Main Road', loc: 'Near School', date: '16 Oct 2023, 10:00 AM', status: 'In Progress', img: 'https://placehold.co/200x120/e2e8f0/475569?text=Pothole' },
-  { id: 'UP-004', type: 'Water Leakage', loc: 'Pipeline Junction', date: '15 Oct 2023, 08:45 AM', status: 'Resolved', img: 'https://placehold.co/200x120/e2e8f0/475569?text=Water+Leak' },
-  { id: 'UP-005', type: 'Illegal Parking', loc: 'Market Area', date: '14 Oct 2023, 11:20 AM', status: 'Pending', img: 'https://placehold.co/200x120/e2e8f0/475569?text=Parking' },
-];
-
 const statusStyles = {
-  'Pending': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  'Assigned': 'bg-orange-100 text-orange-800 border-orange-200',
-  'In Progress': 'bg-green-100 text-green-800 border-green-200',
-  'Resolved': 'bg-slate-200 text-slate-800 border-slate-300'
+  'reported': 'bg-red-50 text-red-700 border-red-100',
+  'assigned': 'bg-blue-50 text-blue-700 border-blue-100',
+  'progress': 'bg-amber-50 text-amber-700 border-amber-100',
+  'resolved': 'bg-green-50 text-green-700 border-green-100'
 };
 
 export default function WardManagementPage() {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Filter States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilters, setActiveFilters] = useState({
+    status: '',
+    category: '',
+    ward: ''
+  });
+
+  const fetchIssues = async () => {
+    setLoading(true);
+    try {
+      const response = await reportService.getIssues();
+      setIssues(response.data || []);
+    } catch (error) {
+      console.error("Failed to fetch issues", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchIssues();
+  }, []);
 
   const assignTask = async (issueId) => {
     try {
@@ -29,32 +45,47 @@ export default function WardManagementPage() {
         setIssues(prev => prev.map(i => i._id === issueId ? { ...i, status: 'assigned' } : i));
       }
     } catch (err) {
-      alert('Failed to assign task. Check your permissions.');
-      console.error(err);
+      alert('Failed to assign task.');
     }
   };
 
-  useEffect(() => {
-    const fetchIssues = async () => {
-      try {
-        const response = await reportService.getIssues();
-        setIssues(response.data || []);
-      } catch (error) {
-        console.error("Failed to fetch issues", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchIssues();
-  }, []);
+  // 📝 Intelligent Filtering Logic
+  const filteredIssues = useMemo(() => {
+    return issues.filter(issue => {
+      const matchesSearch = 
+        (issue.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (issue.category?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (issue.location?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+      
+      const matchesStatus = !activeFilters.status || issue.status === activeFilters.status;
+      const matchesCategory = !activeFilters.category || issue.category === activeFilters.category;
+      const matchesWard = !activeFilters.ward || issue.ward === activeFilters.ward;
+
+      return matchesSearch && matchesStatus && matchesCategory && matchesWard;
+    });
+  }, [issues, searchQuery, activeFilters]);
+
+  // Derived options for filters
+  const categories = [...new Set(issues.map(i => i.category))].filter(Boolean);
+  const wards = [...new Set(issues.map(i => i.ward))].filter(Boolean);
 
   return (
     <div className="flex-1 bg-slate-50 min-h-screen pt-20 px-4 sm:px-6 lg:px-8 pb-12 w-full max-w-7xl mx-auto">
       
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Ward Management Panel</h1>
-        <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">Manage and assign tasks for reported civic issues.</p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Ward Management Panel</h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">Real-time oversight of reported civic incidents.</p>
+        </div>
+        {(searchQuery || activeFilters.status || activeFilters.category || activeFilters.ward) && (
+          <button 
+            onClick={() => { setSearchQuery(''); setActiveFilters({ status: '', category: '', ward: '' }); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-200 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-slate-300 transition-colors"
+          >
+            <X className="w-3.5 h-3.5" /> Clear All Filters
+          </button>
+        )}
       </div>
 
       {/* Main Panel Container */}
@@ -62,63 +93,100 @@ export default function WardManagementPage() {
         
         {/* Toolbar */}
         <div className="p-4 border-b border-slate-200 flex flex-col lg:flex-row gap-4 justify-between items-center bg-white">
+          {/* Search */}
           <div className="relative w-full lg:w-96">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="w-4 h-4 text-slate-400" />
             </div>
             <input 
               type="text" 
-              className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg text-sm bg-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-shadow" 
-              placeholder="Search complaints..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg text-sm bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm" 
+              placeholder="Search by title, category, or area..." 
             />
           </div>
 
-          <div className="flex overflow-x-auto lg:overflow-visible items-center gap-2 w-full lg:w-auto pb-2 lg:pb-0 scrollbar-hide">
-            {['Status', 'Type', 'Ward', 'Date'].map((filter) => (
-              <button key={filter} className="flex-shrink-0 flex items-center space-x-2 px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors bg-white shadow-sm whitespace-nowrap">
-                <span>{filter}</span>
-                <Filter className="w-3 h-3 text-slate-400" />
-              </button>
-            ))}
+          {/* Functional Select Filters */}
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+            {/* Status Filter */}
+            <select 
+              value={activeFilters.status}
+              onChange={(e) => setActiveFilters(prev => ({ ...prev, status: e.target.value }))}
+              className="px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 outline-none transition-colors"
+            >
+              <option value="">Status: All</option>
+              <option value="reported">Reported</option>
+              <option value="assigned">Assigned</option>
+              <option value="progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+            </select>
+
+            {/* Type Filter */}
+            <select 
+              value={activeFilters.category}
+              onChange={(e) => setActiveFilters(prev => ({ ...prev, category: e.target.value }))}
+              className="px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 outline-none transition-colors"
+            >
+              <option value="">Category: All</option>
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat.replace('-', ' ').toUpperCase()}</option>
+              ))}
+            </select>
+
+            {/* Ward Filter */}
+            <select 
+              value={activeFilters.ward}
+              onChange={(e) => setActiveFilters(prev => ({ ...prev, ward: e.target.value }))}
+              className="px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 outline-none transition-colors"
+            >
+              <option value="">Ward: All</option>
+              {wards.map(w => (
+                <option key={w} value={w}>{w}</option>
+              ))}
+            </select>
           </div>
         </div>
 
-        {/* Table Wrapper for Horizontal Scroll */}
+        {/* Table Wrapper */}
         <div className="overflow-x-auto relative">
           <table className="min-w-full divide-y divide-slate-200 text-left">
-            <thead className="bg-slate-50 font-bold">
+            <thead className="bg-slate-50">
               <tr>
-                <th className="px-6 py-4 text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider min-w-[200px]">Issue Details</th>
-                <th className="px-6 py-4 text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider min-w-[120px]">Photo Proof</th>
-                <th className="px-6 py-4 text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider">Reported</th>
-                <th className="px-6 py-4 text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider text-right">Actions</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest min-w-[200px]">Incident Details</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest min-w-[120px]">Evidence</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date Reported</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Phase</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Control</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-10 text-center text-sm text-slate-500">
-                    <div className="animate-pulse flex flex-col items-center">
-                      <div className="h-4 w-48 bg-slate-200 rounded mb-2"></div>
-                      <p>Loading city issues...</p>
+                  <td colSpan="5" className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                       <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                       <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Polling Database...</p>
                     </div>
                   </td>
                 </tr>
-              ) : issues.length === 0 ? (
+              ) : filteredIssues.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-10 text-center text-sm text-slate-500">No issues found.</td>
+                  <td colSpan="5" className="px-6 py-16 text-center">
+                    <p className="text-sm font-bold text-slate-400">No issues found matching your selection.</p>
+                    <button onClick={() => { setSearchQuery(''); setActiveFilters({ status: '', category: '', ward: '' }); }} className="text-blue-600 text-[10px] font-black uppercase mt-2 underline">Reset filters</button>
+                  </td>
                 </tr>
               ) : (
-                issues.map((row) => (
-                  <tr key={row._id} className="hover:bg-slate-50/80 transition-colors group">
+                filteredIssues.map((row) => (
+                  <tr key={row._id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-6 py-4">
                       <Link to={`/issue/${row._id}`} className="block">
-                        <span className="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors line-clamp-1">{row.title || row.category}</span>
+                        <span className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-1">{row.title || row.category?.replace('-', ' ')}</span>
                         <div className="flex items-center gap-2 mt-1">
-                           <p className="text-[10px] text-slate-400 font-semibold uppercase">{row.ward}</p>
+                           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{row.ward}</p>
                            <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                           <p className="text-[10px] text-slate-500 capitalize">{row.category?.replace('-', ' ')}</p>
+                           <p className="text-[10px] text-slate-500 font-medium truncate max-w-[150px]">{row.location}</p>
                         </div>
                       </Link>
                     </td>
@@ -128,26 +196,23 @@ export default function WardManagementPage() {
                           {row.images.slice(0, 2).map((img, idx) => (
                             <img
                               key={idx}
-                              src={`http://localhost:5000/${img.replace(/\\/g, '/')}`}
-                              alt={`Photo ${idx + 1}`}
+                              src={`${import.meta.env.VITE_IMG_BASE_URL || 'http://localhost:5000'}/${img.replace(/\\/g, '/')}`}
+                              alt="Proof"
                               className="h-10 w-14 object-cover rounded border-2 border-white shadow-sm bg-slate-100"
                               onError={(e) => { e.currentTarget.style.display = 'none'; }}
                             />
                           ))}
-                          {row.images.length > 2 && (
-                             <div className="h-10 w-10 rounded bg-slate-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-500">+{row.images.length - 2}</div>
-                          )}
                         </div>
                       ) : (
-                        <div className="text-[10px] italic text-slate-400">No Image</div>
+                        <div className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Missing Proof</div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="text-xs font-medium text-slate-600">{new Date(row.createdAt).toLocaleDateString()}</p>
+                      <p className="text-xs font-bold text-slate-600">{new Date(row.createdAt).toLocaleDateString()}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">{new Date(row.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusStyles[row.status] || 'bg-slate-100 text-slate-800'}`}>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${statusStyles[row.status] || 'bg-slate-100 text-slate-800'}`}>
                         {row.status}
                       </span>
                     </td>
@@ -156,11 +221,11 @@ export default function WardManagementPage() {
                           <button 
                             onClick={() => assignTask(row._id)}
                             disabled={row.status !== 'reported'}
-                            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-lg shadow-sm transition-colors text-[10px] font-bold uppercase"
+                            className="h-8 bg-blue-600 hover:bg-blue-700 disabled:opacity-30 disabled:cursor-not-allowed text-white px-4 rounded-lg shadow-sm transition-all text-[10px] font-black uppercase tracking-widest active:scale-95"
                           >
-                            {row.status === 'assigned' ? 'Assigned' : 'Assign'}
+                            {row.status === 'assigned' ? 'Hired' : 'Assign'}
                           </button>
-                          <Link to={`/issue/${row._id}`} className="bg-white hover:bg-slate-50 text-slate-600 border border-slate-300 p-1.5 rounded-lg transition-colors">
+                          <Link to={`/issue/${row._id}`} className="h-8 w-8 bg-white hover:bg-slate-50 text-slate-400 hover:text-slate-600 border border-slate-200 flex items-center justify-center rounded-lg transition-colors shadow-sm">
                              <MoreVertical className="w-4 h-4" />
                           </Link>
                        </div>
@@ -172,20 +237,14 @@ export default function WardManagementPage() {
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="px-6 py-4 border-t border-slate-200 bg-white flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-xs text-slate-500 font-medium">
-            Showing <span className="text-slate-900">1-5</span> of <span className="text-slate-900">{issues.length}</span> issues
+        {/* Info Footer */}
+        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em]">
+            Records: <span className="text-slate-900">{filteredIssues.length}</span> / {issues.length} total
           </div>
-          <div className="flex items-center space-x-1">
-            <button className="p-1.5 rounded border border-slate-200 text-slate-400 hover:bg-slate-50 disabled:opacity-50" disabled>
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button className="w-7 h-7 rounded border border-blue-600 bg-blue-50 text-blue-700 font-bold text-xs transition-colors">1</button>
-            <button className="w-7 h-7 rounded border border-transparent hover:bg-slate-100 text-slate-500 font-semibold text-xs transition-colors">2</button>
-            <button className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
-              <ChevronRight className="w-4 h-4" />
-            </button>
+          <div className="flex items-center gap-1">
+             <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+             <span className="text-[10px] font-black text-slate-400 uppercase">Live Database Sync</span>
           </div>
         </div>
 
