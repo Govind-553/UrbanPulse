@@ -35,6 +35,16 @@ export default function CitizenReportPage() {
     "Garbage Overflow"
   ];
 
+  // Refactored camera attachment logic: 
+  // Ensures stream is attached even if video element renders slightly after state change
+  useEffect(() => {
+    if (showCamera && stream && videoRef.current) {
+      videoRef.current.srcObject = stream;
+      // Some mobile browsers require explicit play() call
+      videoRef.current.play().catch(e => console.warn("Auto-play prevented:", e));
+    }
+  }, [showCamera, stream]);
+
   const handleGpsDetect = async (specificPhoto = null) => {
     setGpsLoading(true);
     let coords = null;
@@ -163,7 +173,6 @@ export default function CitizenReportPage() {
         audio: false 
       });
       setStream(mediaStream);
-      if (videoRef.current) videoRef.current.srcObject = mediaStream;
       setShowCamera(true);
     } catch (err) {
       console.error("Camera access denied", err);
@@ -261,7 +270,13 @@ export default function CitizenReportPage() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center"
           >
-            <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+            <video 
+              ref={videoRef} 
+              autoPlay 
+              playsInline 
+              muted 
+              className="w-full h-full object-cover" 
+            />
             <canvas ref={canvasRef} className="hidden" />
             
             <div className="absolute bottom-10 left-0 right-0 flex justify-around items-center px-10">
